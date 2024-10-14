@@ -1,4 +1,4 @@
-:Class Prod
+:Class Producer
 
     :field private shared sharedlib←'kafka'
     :field private prod
@@ -16,7 +16,7 @@
       r←2⊃r
     ∇
    
-    ∇ Make
+    ∇ make
       :Access Public
       :Implements constructor
       prod←∆new    
@@ -33,7 +33,7 @@
       r←(class.⍎name)prod
     ∇
  
-    ∇ Unmake
+    ∇ unmake
       :Implements destructor
       ∆del prod
     ∇   
@@ -53,7 +53,7 @@
       :EndIf
     ∇
   
-    ∇ r←SetConfVal(opt val)
+    ∇ r←configure(opt val)
       :Access public
       r←∆setconf(opt val)
     ∇
@@ -75,13 +75,13 @@
       r←(class.⍎name)prod topic_name partition payload 1 512 512
     ∇ 
        
-    ∇ r←Produce(topic_name partition payload);err;msgid;z
+    ∇ r←produce(topic_name partition payload);err;msgid;z
       :Access public
       (z msgid err)←∆produce(topic_name partition payload)
       r←z,msgid
     ∇
 
-    ∇ r←ProduceRec record;err;msgid;z
+    ∇ r←produce_rec record;err;msgid;z
       :Access public     
 
       (z msgid err)←∆produce1 record.asArg
@@ -99,17 +99,17 @@
       r←(class.⍎name)prod length length length
     ∇
     
-    ∇ r←DeliveryReport length;len;err;msgid;z
+    ∇ r←delivery_report length;len;err;msgid;z
       :Access public
       (z msgid err len)←∆delivery(length)
       r←z ((len↑msgid),[1.5](len↑err))
     ∇    
-    
-    ∇r←UpdateOutstanding;err;del
+
+    ∇r←update_outstanding;err;del
     :access public
      
     :while 1
-    (err del)←DeliveryReport 100
+    (err del)←delivery_report 100
     
     :if 0=err 
     :andif 0<≢del       
@@ -125,7 +125,7 @@
     ∇
     
 
-    ∇ r←DeliveryReportErr length;len;err;msgid;z
+    ∇ r←delivery_report_err length;len;err;msgid;z
       :Access public   
        (z msgid err len)←∆delivery(length)
       
@@ -141,13 +141,13 @@
       r←(class.⍎name)errid 512 512
     ∇
       
-    ∇ r←MessageError errid
+    ∇ r←parse_error errid
       :Access public
       r←∆errormsg(errid)
     ∇
        
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝ Helpers 
-    ∇ r←GetProd
+    ∇ r←get_producer
       :Access public
       r←prod
     ∇

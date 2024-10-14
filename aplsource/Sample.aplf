@@ -1,39 +1,37 @@
 Sample
 
 
- cons←⎕NEW Cons
+ consumer←⎕NEW Consumer
 
- cons.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
- cons.SetConfVal'client.id' 'bhcgrs3550'
- cons.SetConfVal'group.id' 'dyalog'
+ consumer.configure'bootstrap.servers' 'localhost:9092' ⍝'grs3550.insight.local:9092'
+ consumer.configure'client.id' 'martina'⍝'bhcgrs3550'
+ consumer.configure'group.id' 'dyalog'
 
- l3←cons.NewTopicPartition
+ l3←consumer.topic_partition
 
- cons.SetTopicPartition l3'animals'
-⍝ cons3.SetTopicPartition l3'cars'
-
- cons.SubscribeConsTP l3
+ consumer.set_topic_partition l3'animals'
+ consumer.subscribe l3
 
 
 
-bb←⎕new #.Record ('animals' 'Blackbird' 'birds' )
-so←⎕new #.Record ('animals' 'Sole' 'fish' )
-ef←⎕new #.Record ('animals' 'Elefant' 'mamal' )
+bb←⎕new #.Record ('animals' 'Blackbird2' 'birds' )
+so←⎕new #.Record ('animals' 'Sole2' 'fish' )
+ef←⎕new #.Record ('animals' 'Elefant2' 'mamal' )
 
-prod←⎕NEW Prod
-prod.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
-prod.SetConfVal'client.id' 'bhc'
+producer←⎕NEW Producer
+producer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
+producer.configure'client.id' 'martina'⍝'bhc'
 
-prod.ProduceRec bb
-prod.ProduceRec so
-prod.ProduceRec ef
+producer.produce_rec bb
+producer.produce_rec so
+producer.produce_rec ef
 
 ⎕dl 1
-prod.DeliveryReport 13
+producer.delivery_report 13
 
 
-:while 0=⊃cr←cons.ConsumeRec
+:while 0=⊃cr←consumer.consume_rec
   (2⊃cr).(Topic Payload Key Partition)
 :endwhile
-⎕ex 'prod'
-⎕ex 'cons'
+⎕ex 'producer'
+⎕ex 'consumer'

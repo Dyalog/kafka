@@ -1,39 +1,39 @@
  Sample2 n;i
 
 
- cons←⎕NEW Cons
+ consumer←⎕NEW Consumer
 
- cons.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
- cons.SetConfVal'client.id' 'bhcgrs3550'
- cons.SetConfVal'group.id' 'dyalog'
+ consumer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
+ consumer.configure'client.id' 'bhcgrs3550'
+ consumer.configure'group.id' 'dyalog'
 
- l3←cons.NewTopicPartition
+ l3←consumer.topic_partition
 
- cons.SetTopicPartition l3'animals'
-⍝ cons3.SetTopicPartition l3'cars'
+ consumer.set_topic_partition l3'animals'
+⍝cons3.set_topic_partition l3'cars'
 
- cons.SubscribeConsTP l3
+ consumer.subscribe l3
 
- prod←⎕NEW Prod
- prod.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
- prod.SetConfVal'client.id' 'bhc'
+ producer←⎕NEW Producer
+ producer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
+ producer.configure'client.id' 'bhc'
 
 
  :For i :In ⍳n
-     prod.ProduceRec ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕3|i))
+     producer.produce_rec ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕3|i))
      :If 0=10|i
-         prod.UpdateOutstanding
+         producer.update_outstanding
      :EndIf
  :EndFor
 
 
 
  ⎕DL 1
- prod.UpdateOutstanding
+ producer.update_outstanding
 
 
- :While 0=⊃cr←cons.ConsumeRec
+ :While 0=⊃cr←consumer.consume_rec
      (2⊃cr).(Topic Payload Key Partition)
  :EndWhile
- ⎕EX'prod'
- ⎕EX'cons'
+ ⎕EX'producer'
+ ⎕EX'consumer'

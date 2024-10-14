@@ -1,4 +1,4 @@
-:Class Cons
+:Class Consumer
 
     :field private shared sharedlib←'kafka'
     :field private cons
@@ -15,7 +15,7 @@
       r←(class.⍎name)1
       r←2⊃r
     ∇
-    ∇ Make
+    ∇ make
       :Access Public
       :Implements constructor
       cons←∆new
@@ -30,7 +30,7 @@
       :EndIf
       r←(class.⍎name)cons
     ∇
-    ∇ Unmake
+    ∇ unmake
       :Implements destructor                                                                
       ∆del cons
     ∇
@@ -49,7 +49,7 @@
           r←0 ''
       :EndIf
     ∇
-    ∇ r←SetConfVal(opt val)
+    ∇ r←configure(opt val)
       :Access public
       r←∆setconf opt val
     ∇
@@ -65,7 +65,7 @@
       r←(class.⍎name)1
       r←2⊃r
     ∇
-    ∇ r←NewTopicPartition
+    ∇ r←topic_partition
       :Access public
       r←∆newTP
     ∇
@@ -81,7 +81,7 @@
           r←0 ''
       :EndIf
     ∇
-    ∇ r←SetTopicPartition(TPlist topicname)
+    ∇ r←set_topic_partition(TPlist topicname)
       :Access public
       r←∆setTP TPlist topicname
     ∇
@@ -97,7 +97,7 @@
           r←0 ''
       :EndIf
     ∇
-    ∇ r←SubscribeConsTP TPlist
+    ∇ r←subscribe TPlist
       :Access public
       r←∆subscribeConsTP TPlist
     ∇
@@ -116,7 +116,7 @@
           r←3⊃r
       :EndIf
     ∇
-    ∇ r←Consume
+    ∇ r←consume
       :Access public
       r←∆consume
     ∇
@@ -139,7 +139,7 @@
     ∇
 
       
-    ∇ r←ConsumeRec
+    ∇ r←consume_rec
       :Access public
 
       r←∆consume1  200 2048 200
@@ -152,7 +152,7 @@
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Helpers
-    ∇ r←GetCons
+    ∇ r←get_consumer
       :Access public
       r←cons
     ∇

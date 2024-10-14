@@ -1,17 +1,14 @@
  test_cons
 
+ consumer←⎕NEW Consumer
+
+ consumer.configure 'bootstrap.servers' 'localhost:9092'
+ consumer.configure 'client.id' 'martina'
+ consumer.configure 'group.id' 'martina'
 
 
- cons←⎕NEW Cons
+ l←consumer.topic_partition
+ consumer.set_topic_partition l 'animals'
+ ⍝ consumer.set_topic_partition l 'cars'
 
- cons.SetConfVal'bootstrap.servers' 'localhost:9092'
- cons.SetConfVal'client.id' 'martina'
- cons.SetConfVal'group.id' 'martina'
-
-
- l←cons.NewTopicPartition
-
- cons.SetTopicPartition l'animals'
- cons.SetTopicPartition l'cars'
-
-  cons.SubscribeConsTP l
+ consumer.subscribe l
