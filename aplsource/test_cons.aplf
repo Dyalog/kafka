@@ -1,0 +1,17 @@
+ test_cons
+
+
+
+ cons←⎕NEW Cons
+
+ cons.SetConfVal'bootstrap.servers' 'localhost:9092'
+ cons.SetConfVal'client.id' 'martina'
+ cons.SetConfVal'group.id' 'martina'
+
+
+ l←cons.NewTopicPartition
+
+ cons.SetTopicPartition l'animals'
+ cons.SetTopicPartition l'cars'
+
+  cons.SubscribeConsTP l

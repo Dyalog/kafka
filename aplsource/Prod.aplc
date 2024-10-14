@@ -1,0 +1,155 @@
+:Class Prod
+
+    :field private shared sharedlib←'kafka'
+    :field private prod
+    :field private shared class←⊃⊃⎕class⎕this 
+    :field private outstanding
+  
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Constructor
+
+    ∇ r←∆new;name
+      :If 0=class.⎕NC name←'InitKafka'
+          class.⎕NA'I4 ',sharedlib,'|',name,' >P'
+      :EndIf
+      r←(class.⍎name)1
+      r←2⊃r
+    ∇
+   
+    ∇ Make
+      :Access Public
+      :Implements constructor
+      prod←∆new    
+      outstanding←0 2⍴0
+    ∇
+ 
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Destructor
+     
+    ∇ r←∆del prod;name
+      :If 0=class.⎕NC name←'UninitProducer'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P'
+      :EndIf
+      r←(class.⍎name)prod
+    ∇
+ 
+    ∇ Unmake
+      :Implements destructor
+      ∆del prod
+    ∇   
+    
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Configuration Settings
+
+    ∇ r←∆setconf(opt val);name
+      :If 0=class.⎕NC name←'SetKafkaConf'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)prod opt val 512 512
+      :If 0≠⊃r
+          r←r
+      :Else
+          r←0 ''
+      :EndIf
+    ∇
+  
+    ∇ r←SetConfVal(opt val)
+      :Access public
+      r←∆setconf(opt val)
+    ∇
+      
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Producer 
+
+    ∇ r←∆produce1(topic_name payload key partition);name
+      :If 0=class.⎕NC name←'Produce1'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)prod topic_name payload (≢payload) key (≢key) partition 1 512 512
+    ∇ 
+
+    ∇ r←∆produce(topic_name partition payload);name
+      :If 0=class.⎕NC name←'Produce'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <I4 <0T1 >U8 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)prod topic_name partition payload 1 512 512
+    ∇ 
+       
+    ∇ r←Produce(topic_name partition payload);err;msgid;z
+      :Access public
+      (z msgid err)←∆produce(topic_name partition payload)
+      r←z,msgid
+    ∇
+
+    ∇ r←ProduceRec record;err;msgid;z
+      :Access public     
+
+      (z msgid err)←∆produce1 record.asArg
+      r←z,msgid        
+      outstanding⍪←msgid 0
+    ∇
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Delivery reports
+
+    ∇ r←∆delivery length;name
+      :If 0=class.⎕NC name←'DeliveryReport'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P >I8[] >I4[] =I4'
+      :EndIf
+      r←(class.⍎name)prod length length length
+    ∇
+    
+    ∇ r←DeliveryReport length;len;err;msgid;z
+      :Access public
+      (z msgid err len)←∆delivery(length)
+      r←z ((len↑msgid),[1.5](len↑err))
+    ∇    
+    
+    ∇r←UpdateOutstanding;err;del
+    :access public
+     
+    :while 1
+    (err del)←DeliveryReport 100
+    
+    :if 0=err 
+    :andif 0<≢del       
+       ok←0=del[;2]
+       outstanding←(~outstanding[;1]∊ok/del[;1])⌿outstanding
+       ix←(outstanding[;1]⍳(~ok)/del[;1])~1+≢outstanding
+       outstanding[ix ;2 ]←(~ok)/del[;2]    
+    :else
+      :leave  
+    :endif
+    :endwhile
+    r←err outstanding 
+    ∇
+    
+
+    ∇ r←DeliveryReportErr length;len;err;msgid;z
+      :Access public   
+       (z msgid err len)←∆delivery(length)
+      
+      r←z,((len↑msgid),[1.5](len↑err))
+      r←r[⍸0≠r[;3];]
+      
+    ∇
+
+    ∇ r←∆errormsg errid;name
+      :If 0=class.⎕NC name←'DRMessageError'
+          class.⎕NA'I4 ',sharedlib,'|',name,' <I4 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)errid 512 512
+    ∇
+      
+    ∇ r←MessageError errid
+      :Access public
+      r←∆errormsg(errid)
+    ∇
+       
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝ Helpers 
+    ∇ r←GetProd
+      :Access public
+      r←prod
+    ∇
+
+:EndClass

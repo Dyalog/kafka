@@ -1,0 +1,160 @@
+:Class Cons
+
+    :field private shared sharedlib←'kafka'
+    :field private cons
+    :field private shared TPlist
+    :field private shared class←⊃⊃⎕class⎕this
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Constructor
+
+    ∇ r←∆new;name
+      :If 0=class.⎕NC name←'InitKafka'
+          class.⎕NA'I4 ',sharedlib,'|',name,' >P'
+      :EndIf
+      r←(class.⍎name)1
+      r←2⊃r
+    ∇
+    ∇ Make
+      :Access Public
+      :Implements constructor
+      cons←∆new
+    ∇
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Destructor
+
+    ∇ r←∆del cons;name
+      :If 0=class.⎕NC name←'UninitConsumer'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P'
+      :EndIf
+      r←(class.⍎name)cons
+    ∇
+    ∇ Unmake
+      :Implements destructor                                                                
+      ∆del cons
+    ∇
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Configuration Settings
+
+    ∇ r←∆setconf(opt val);name
+      :If 0=class.⎕NC name←'SetKafkaConf'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)cons opt val 512 512
+      :If 0≠⊃r
+          r←r
+      :Else
+          r←0 ''
+      :EndIf
+    ∇
+    ∇ r←SetConfVal(opt val)
+      :Access public
+      r←∆setconf opt val
+    ∇
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Set topic and partition given a list name.
+    ⍝ NB: it takes topic name, not topic handle
+
+    ∇ r←∆newTP;name
+      :If 0=class.⎕NC name←'NewTopicPartitionList'
+          class.⎕NA'I4 ',sharedlib,'|',name,' >P'
+      :EndIf
+      r←(class.⍎name)1
+      r←2⊃r
+    ∇
+    ∇ r←NewTopicPartition
+      :Access public
+      r←∆newTP
+    ∇
+
+    ∇ r←∆setTP(TPlist topicname);name
+      :If 0=class.⎕NC name←'SetTopicPartitionList'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1'
+      :EndIf
+      r←(class.⍎name)TPlist topicname
+      :If 0≠⊃r
+          r←r
+      :Else
+          r←0 ''
+      :EndIf
+    ∇
+    ∇ r←SetTopicPartition(TPlist topicname)
+      :Access public
+      r←∆setTP TPlist topicname
+    ∇
+
+    ∇ r←∆subscribeConsTP TPlist;name
+      :If 0=class.⎕NC name←'SubscribeConsumerTPList'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P P >0T1 I4'
+      :EndIf
+      r←(class.⍎name)cons TPlist 512 512
+      :If 0≠⊃r
+          r←r
+      :Else
+          r←0 ''
+      :EndIf
+    ∇
+    ∇ r←SubscribeConsTP TPlist
+      :Access public
+      r←∆subscribeConsTP TPlist
+    ∇
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Consumer
+    ∇ r←∆consume;name
+   ⍝ :Access public
+      :If 0=class.⎕NC name←'Consume'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P >0T1 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)cons 512 512 512
+      :If 0≠⊃r
+          r←'err'
+      :Else
+          r←3⊃r
+      :EndIf
+    ∇
+    ∇ r←Consume
+      :Access public
+      r←∆consume
+    ∇
+
+    ∇ r←∆consume1 (tl pl kl);name
+      :If 0=class.⎕NC name←'Consume1'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)cons tl tl pl pl kl kl 1  512 512
+      :select ⊃r 
+        :case 0   ⍝ we got a message
+          r←0 , (r[3 5 7]↑¨r[2 4 6]) , 8⊃r
+        :case 1   ⍝ no message
+          r←r[1 9]
+        :case 2   ⍝ we are need more space
+            r←∆consume1 10+r[3 5 7] 
+        :else    ⍝ Kafka error
+            r←r[1 9]
+      :endselect
+    ∇
+
+      
+    ∇ r←ConsumeRec
+      :Access public
+
+      r←∆consume1  200 2048 200
+      :if 0=⊃r
+      r←0 ( ⎕new #.Record (r[2 3 4 5]))
+      :endif
+    ∇
+
+      
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Helpers
+    ∇ r←GetCons
+      :Access public
+      r←cons
+    ∇
+
+:EndClass

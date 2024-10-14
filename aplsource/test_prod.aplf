@@ -1,0 +1,27 @@
+ test_prod
+
+ prod←⎕NEW Prod
+ prod.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
+ prod.SetConfVal'client.id' 'martina'
+
+ prod.Produce 'animals' 0 'mice'
+ prod.Produce 'animals' 0 'mouse'
+ prod.Produce 'animals' 0 'rat'
+
+ prod.Produce 'animals' 1 'giraffe'
+ prod.Produce 'animals' 1 'gazelle'
+
+ prod.Produce 'animals' 2 'seal'
+
+
+ ⍝:For i :In ⍳15
+⍝     prod.Produce'message'('msg n',⍕i)
+⍝ :EndFor
+⍝
+⍝ ⍝prod.DeliveryReport 5
+ prod.DeliveryReport 15
+⍝ ⍝prod.DeliveryReport 8
+⍝⍝ prod.DeliveryReport 30
+⍝
+⍝
+⍝ ⍝prod.MessageError 0

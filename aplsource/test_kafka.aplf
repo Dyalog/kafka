@@ -1,0 +1,18 @@
+ test_kafka
+
+ prod←⎕NEW Kafka
+
+ prod.SetConfVal'bootstrap.servers' 'localhost:9092'
+ prod.SetConfVal'client.id' 'martina'
+
+ prod.TopicConf
+ prod.SetTopicConfVal'acks' '-1'
+
+ cons←⎕NEW Kafka
+ cons.SetConfVal'bootstrap.servers' 'localhost:9092'
+ cons.SetConfVal'client.id' 'martina'
+ cons.SetConfVal'group.id' 'martina'
+
+ l←cons.NewTopicPartition
+ cons.SetTopicPartition l'message105' 1
+ cons.SubscribeConsTP

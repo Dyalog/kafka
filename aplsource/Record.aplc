@@ -1,0 +1,65 @@
+:Class Record
+:field Public Topic
+:field Public Payload
+:field Public Key
+:field Public Partition 
+
+
+∇Clear
+Topic←''
+Payload←''
+Key←''
+Partition←¯1
+∇           
+
+∇Make
+:access public
+:implements constructor
+Clear
+∇
+
+∇Make1 topic
+:access public
+:implements constructor
+Clear      
+Topic←topic
+∇
+
+∇Make2 (topic  payload)
+:access public
+:implements constructor
+Clear 
+Topic←topic
+Payload←payload
+∇
+
+
+∇Make3 (topic payload key)
+:access public
+:implements constructor
+Clear
+Topic←topic
+Payload←payload
+Key←key
+∇
+
+∇Make4 (topic payload key partition)
+:access public
+:implements constructor
+Topic←topic
+Payload←payload
+Key←key
+Partition←partition
+∇
+
+ 
+
+∇r←asArg
+:access public
+r← Topic Payload Key Partition
+∇
+
+
+
+
+:EndClass

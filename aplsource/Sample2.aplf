@@ -1,0 +1,39 @@
+ Sample2 n;i
+
+
+ cons←⎕NEW Cons
+
+ cons.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
+ cons.SetConfVal'client.id' 'bhcgrs3550'
+ cons.SetConfVal'group.id' 'dyalog'
+
+ l3←cons.NewTopicPartition
+
+ cons.SetTopicPartition l3'animals'
+⍝ cons3.SetTopicPartition l3'cars'
+
+ cons.SubscribeConsTP l3
+
+ prod←⎕NEW Prod
+ prod.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
+ prod.SetConfVal'client.id' 'bhc'
+
+
+ :For i :In ⍳n
+     prod.ProduceRec ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕3|i))
+     :If 0=10|i
+         prod.UpdateOutstanding
+     :EndIf
+ :EndFor
+
+
+
+ ⎕DL 1
+ prod.UpdateOutstanding
+
+
+ :While 0=⊃cr←cons.ConsumeRec
+     (2⊃cr).(Topic Payload Key Partition)
+ :EndWhile
+ ⎕EX'prod'
+ ⎕EX'cons'
