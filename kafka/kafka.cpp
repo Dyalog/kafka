@@ -1,4 +1,12 @@
-#include "pch.h"
+#if defined(FORWIN)
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+// Windows Header Files
+#include <windows.h>
+#elif defined(FORMAC) ||defined(FORAIX) || defined(FORLINUX)
+#include <unistd.h>
+#else
+#endif
+#include <stdint.h>
 #include "stdlib.h"
 #include "rdkafka.h"
 #include "kafka.h"
