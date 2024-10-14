@@ -1,7 +1,27 @@
-#include "pch.h"
-#include "stdlib.h"
+#if defined(FORWIN)
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+// Windows Header Files
+#include <windows.h>
+#elif defined(FORMAC) ||defined(FORAIX) || defined(FORLINUX)
+#include <unistd.h>
+#else
+#endif
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include "rdkafka.h"
 #include "kafka.h"
+
+#if defined(FORMAC) || defined(FORLINUX)
+int strncpy_s(char* dst, size_t ds, const char* src, size_t ss)
+{
+	strncpy(dst, src, ss);
+	return 0;
+}
+#define min(a,b) ((a)<(b)?(a):(b))
+#endif
+
+
 
 unsigned long long global_counter=0; // added =0
 
@@ -137,7 +157,7 @@ LIBRARY_API int Produce(void* prod, char* topic_name, int *partition, char* payl
 		payload,
 		strlen(payload),
 		NULL, // key, defines the logic by which kafka partition automatically. If NULL it is itself automatic
-		NULL,
+		0,
 		(void*)*msgid);
 
 	return 0;
@@ -205,7 +225,7 @@ LIBRARY_API int SetTopicPartitionList(void* subscr, char* topic)
 {
 	
 	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
-	rd_kafka_topic_partition_list_add(subscription, (const char*) topic, NULL);
+	rd_kafka_topic_partition_list_add(subscription, (const char*) topic, 0);
 
 	return 0;
 }

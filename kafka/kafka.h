@@ -1,8 +1,14 @@
 #pragma once
+#if defined(FORMAC) || defined(FORLINUX)
+#define LIBRARY_API __attribute__((visibility("default")))
+#endif
+
+#if defined(FORWIN)
 #ifdef KAFKA_EXPORTS
 #    define LIBRARY_API __declspec(dllexport)
 #else
 #    define LIBRARY_API __declspec(dllimport)
+#endif
 #endif
 extern "C"
 {
