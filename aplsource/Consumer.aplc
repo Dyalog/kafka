@@ -111,7 +111,7 @@
       :Access public
       TPlist←∆newTP
       :If 0≠≢topic_list
-          :If 1=⍴⍴topic_list
+          :If 1=⍴⍴↑topic_list
               topic←topic_list
               ∆setTP(TPlist topic)
           :Else
