@@ -2,7 +2,7 @@
 
     :field private shared sharedlib←'kafka'
     :field private cons
-    :field private shared TPlist
+    :field private TPlist
     :field private shared class←⊃⊃⎕class⎕this
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
@@ -15,10 +15,15 @@
       r←(class.⍎name)1
       r←2⊃r
     ∇
-    ∇ make
+    ∇ make config
       :Access Public
       :Implements constructor
       cons←∆new
+      :For i :In ⍳≢config
+          opt←⊃config[i;1]
+          val←⊃config[i;2]
+          ∆setconf(opt val)
+      :EndFor
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
@@ -31,7 +36,7 @@
       r←(class.⍎name)cons
     ∇
     ∇ unmake
-      :Implements destructor                                                                
+      :Implements destructor
       ∆del cons
     ∇
 
@@ -86,7 +91,7 @@
       r←∆setTP TPlist topicname
     ∇
 
-    ∇ r←∆subscribeConsTP TPlist;name
+    ∇ r←∆subscribeTP TPlist;name
       :If 0=class.⎕NC name←'SubscribeConsumerTPList'
           class.⎕NA'I4 ',sharedlib,'|',name,' P P >0T1 I4'
       :EndIf
@@ -97,15 +102,26 @@
           r←0 ''
       :EndIf
     ∇
-    ∇ r←subscribe TPlist
+    ∇ r←subscribeTP TPlist
       :Access public
-      r←∆subscribeConsTP TPlist
+      r←∆subscribeTP TPlist
+    ∇
+
+    ∇ r←subscribe topic_list;topic;TPlist
+      :Access public
+      TPlist←∆newTP
+      :If 0≠≢topic_list
+          :For i :In ⍳≢topic_list
+              topic←⊃topic_list[i]
+              ∆setTP(TPlist topic)
+          :EndFor
+      :EndIf
+      r←∆subscribeTP TPlist
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Consumer
     ∇ r←∆consume;name
-   ⍝ :Access public
       :If 0=class.⎕NC name←'Consume'
           class.⎕NA'I4 ',sharedlib,'|',name,' P >0T1 >0T1 I4'
       :EndIf
@@ -121,34 +137,32 @@
       r←∆consume
     ∇
 
-    ∇ r←∆consume1 (tl pl kl);name
+    ∇ r←∆consume1(tl pl kl);name
       :If 0=class.⎕NC name←'Consume1'
           class.⎕NA'I4 ',sharedlib,'|',name,' P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 I4'
       :EndIf
-      r←(class.⍎name)cons tl tl pl pl kl kl 1  512 512
-      :select ⊃r 
-        :case 0   ⍝ we got a message
-          r←0 , (r[3 5 7]↑¨r[2 4 6]) , 8⊃r
-        :case 1   ⍝ no message
+      r←(class.⍎name)cons tl tl pl pl kl kl 1 512 512
+      :Select ⊃r
+      :Case 0   ⍝ we got a message
+          r←0,(r[3 5 7]↑¨r[2 4 6]),8⊃r
+      :Case 1   ⍝ no message
           r←r[1 9]
-        :case 2   ⍝ we are need more space
-            r←∆consume1 10+r[3 5 7] 
-        :else    ⍝ Kafka error
-            r←r[1 9]
-      :endselect
+      :Case 2   ⍝ we are need more space
+          r←∆consume1 10+r[3 5 7]
+      :Else    ⍝ Kafka error
+          r←r[1 9]
+      :EndSelect
     ∇
 
-      
+
     ∇ r←consume_rec
       :Access public
-
-      r←∆consume1  200 2048 200
-      :if 0=⊃r
-      r←0 ( ⎕new #.Record (r[2 3 4 5]))
-      :endif
+      r←∆consume1 200 2048 200
+      :If 0=⊃r
+          r←0(⎕NEW #.Record(r[2 3 4 5]))
+      :EndIf
     ∇
 
-      
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Helpers

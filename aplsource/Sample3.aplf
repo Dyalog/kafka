@@ -1,0 +1,36 @@
+Sample3 n;i
+
+ config ← 0 2 ⍴⍬
+ config⍪← 'bootstrap.servers' 'localhost:9092'
+ config⍪← 'client.id' 'bhcgrs3550'
+ config⍪← 'group.id' 'dyalog'
+
+ consumer←⎕NEW Consumer config
+
+ consumer.subscribe 'animals' 'cars' 'plants'
+
+ config ← 0 2 ⍴⍬
+ config⍪← 'bootstrap.servers' 'localhost:9092'
+ config⍪← 'client.id' 'bhc'
+
+ producer←⎕NEW Producer config
+
+
+ :For i :In ⍳n
+     producer.produce_rec ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕3|i))
+     :If 0=10|i
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+
+
+ ⎕DL 1
+ producer.update_outstanding
+
+
+ :While 0=⊃cr←consumer.consume_rec
+     (2⊃cr).(Topic Payload Key Partition)
+ :EndWhile
+ ⎕EX'producer'
+ ⎕EX'consumer'
