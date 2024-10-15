@@ -15,7 +15,7 @@
       r←(class.⍎name)1
       r←2⊃r
     ∇
-    ∇ make config
+    ∇ make config;i;opt;val
       :Access Public
       :Implements constructor
       cons←∆new
@@ -107,7 +107,7 @@
       r←∆subscribeTP TPlist
     ∇
 
-    ∇ r←subscribe topic_list;topic;TPlist
+    ∇ r←subscribe topic_list;topic;TPlist;i
       :Access public
       TPlist←∆newTP
       :If 0≠≢topic_list
