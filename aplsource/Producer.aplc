@@ -2,9 +2,9 @@
 
     :field private shared sharedlib←'kafka'
     :field private prod
-    :field private shared class←⊃⊃⎕class⎕this 
     :field private outstanding
-  
+    :field private shared class←⊃⊃⎕class⎕this
+
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Constructor
 
@@ -15,34 +15,43 @@
       r←(class.⍎name)1
       r←2⊃r
     ∇
-   
-    ∇ make config;i;opt;val
+    ∇ make
       :Access Public
-      :Implements constructor 
+      :Implements constructor
       prod←∆new
-      :For i :In ⍳≢config
-         opt←⊃config[i;1]
-         val←⊃config[i;2]
-         ∆setconf(opt val)
-      :EndFor    
       outstanding←0 2⍴0
     ∇
- 
+    ∇ make_config config;i;opt;val
+      :Access Public
+      :Implements constructor
+      prod←∆new
+      :If (2=≢⍴config)∧(2=2⊃⍴config)
+          :For i :In ⍳≢config
+              opt←⊃config[i;1]
+              val←⊃config[i;2]
+              ∆setconf(opt val)
+          :EndFor
+      :Else
+       ⍝ todo error
+      :EndIf
+      outstanding←0 2⍴0
+    ∇
+
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Destructor
-     
+
     ∇ r←∆del prod;name
       :If 0=class.⎕NC name←'UninitProducer'
           class.⎕NA'I4 ',sharedlib,'|',name,' P'
       :EndIf
       r←(class.⍎name)prod
     ∇
- 
+
     ∇ unmake
       :Implements destructor
       ∆del prod
-    ∇   
-    
+    ∇
+
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Configuration Settings
 
@@ -57,40 +66,37 @@
           r←0 ''
       :EndIf
     ∇
-  
     ∇ r←configure(opt val)
       :Access public
       r←∆setconf(opt val)
     ∇
-      
-    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
-    ⍝ Producer 
 
-    ∇ r←∆produce1(topic_name payload key partition);name
-      :If 0=class.⎕NC name←'Produce1'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)prod topic_name payload (≢payload) key (≢key) partition 1 512 512
-    ∇ 
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
+    ⍝ Producer
 
     ∇ r←∆produce(topic_name partition payload);name
       :If 0=class.⎕NC name←'Produce'
           class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <I4 <0T1 >U8 >0T1 I4'
       :EndIf
       r←(class.⍎name)prod topic_name partition payload 1 512 512
-    ∇ 
-       
+    ∇
     ∇ r←produce(topic_name partition payload);err;msgid;z
       :Access public
       (z msgid err)←∆produce(topic_name partition payload)
       r←z,msgid
     ∇
 
-    ∇ r←produce_rec record;err;msgid;z
-      :Access public     
 
+    ∇ r←∆produce1(topic_name payload key partition);name
+      :If 0=class.⎕NC name←'Produce1'
+          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 I4'
+      :EndIf
+      r←(class.⍎name)prod topic_name payload(≢payload)key(≢key)partition 1 512 512
+    ∇
+    ∇ r←produce_record record;err;msgid;z
+      :Access public
       (z msgid err)←∆produce1 record.asArg
-      r←z,msgid        
+      r←z,msgid
       outstanding⍪←msgid 0
     ∇
 
@@ -103,37 +109,34 @@
       :EndIf
       r←(class.⍎name)prod length length length
     ∇
-    
     ∇ r←delivery_report length;len;err;msgid;z
       :Access public
       (z msgid err len)←∆delivery(length)
-      r←z ((len↑msgid),[1.5](len↑err))
-    ∇    
+      r←z((len↑msgid),[1.5](len↑err))
+    ∇
 
     ∇ r←update_outstanding;err;del
-    :access public
+      :Access public
+      :While 1
+          (err del)←delivery_report 100
      
-    :while 1
-    (err del)←delivery_report 100
-    
-    :if 0=err 
-    :andif 0<≢del       
-       ok←0=del[;2]
-       outstanding←(~outstanding[;1]∊ok/del[;1])⌿outstanding
-       ix←(outstanding[;1]⍳(~ok)/del[;1])~1+≢outstanding
-       outstanding[ix ;2 ]←(~ok)/del[;2]    
-    :else
-      :leave  
-    :endif
-    :endwhile
-    r←err outstanding 
+          :If 0=err
+          :AndIf 0<≢del
+              ok←0=del[;2]
+              outstanding←(~outstanding[;1]∊ok/del[;1])⌿outstanding
+              ix←(outstanding[;1]⍳(~ok)/del[;1])~1+≢outstanding
+              outstanding[ix;2]←(~ok)/del[;2]
+          :Else
+              :Leave
+          :EndIf
+      :EndWhile
+      r←err outstanding
     ∇
-    
 
     ∇ r←delivery_report_err length;len;err;msgid;z
-      :Access public   
-       (z msgid err len)←∆delivery(length)
-      
+      :Access public
+      (z msgid err len)←∆delivery(length)
+     
       r←z,((len↑msgid),[1.5](len↑err))
       r←r[⍸0≠r[;3];]
     ∇
@@ -144,13 +147,13 @@
       :EndIf
       r←(class.⍎name)errid 512 512
     ∇
-      
+
     ∇ r←parse_error errid
       :Access public
       r←∆errormsg(errid)
     ∇
-       
-    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝ Helpers 
+
+    ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝ Helpers
     ∇ r←get_producer
       :Access public
       r←prod

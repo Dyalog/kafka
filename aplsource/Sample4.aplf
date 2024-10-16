@@ -1,16 +1,16 @@
- Sample3 n;i
+ Sample4 n;i
 
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'
  config⍪←'client.id' 'bhcgrs3550'
  config⍪←'group.id' 'dyalog'
 
- consumer←⎕NEW Consumer config
-
  ⍝ Topics created with
  ⍝ kafka-topics.sh --bootstrap-server localhost:9092 --create --topic "topic_name" --partitions "number_of_patitions"
 
- consumer.subscribe'animals' 'cars' 'plants'
+ topic_list←'animals' 'cars' 'plants'
+
+ consumer←⎕NEW Consumer(config topic_list)
 
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'
@@ -18,14 +18,12 @@
 
  producer←⎕NEW Producer config
 
-
  :For i :In ⍳n
      producer.produce_record ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕4|i))
      :If 0=10|i
          producer.update_outstanding
      :EndIf
  :EndFor
-
 
  producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
  producer.produce_record ⎕NEW #.Record('plants' 'iris' 'flowers' 0)

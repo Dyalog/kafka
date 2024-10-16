@@ -2,7 +2,7 @@
 
     :field private shared sharedlib←'kafka'
     :field private cons
-    :field private TPlist
+    :field private topic_partition_list
     :field private shared class←⊃⊃⎕class⎕this
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
@@ -15,15 +15,39 @@
       r←(class.⍎name)1
       r←2⊃r
     ∇
-    ∇ make config;i;opt;val
+    ∇ make
       :Access Public
       :Implements constructor
       cons←∆new
-      :For i :In ⍳≢config
-          opt←⊃config[i;1]
-          val←⊃config[i;2]
-          ∆setconf(opt val)
-      :EndFor
+    ∇
+    ∇ make_config config;i;opt;val
+      :Access Public
+      :Implements constructor
+      cons←∆new
+      :If (2=≢⍴config)∧(2=2⊃⍴config)
+          :For i :In ⍳≢config
+              opt←⊃config[i;1]
+              val←⊃config[i;2]
+              ∆setconf(opt val)
+          :EndFor
+      :Else
+       ⍝ todo error
+      :EndIf
+    ∇
+    ∇ make_config_topic(config topic_list);i;opt;val
+      :Access Public
+      :Implements constructor
+      cons←∆new
+      :If (2=≢⍴config)∧(2=2⊃⍴config)
+          :For i :In ⍳≢config
+              opt←⊃config[i;1]
+              val←⊃config[i;2]
+              ∆setconf(opt val)
+          :EndFor
+      :Else
+       ⍝ todo error
+      :EndIf
+      subscribe topic_list
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
@@ -63,7 +87,7 @@
     ⍝ Set topic and partition given a list name.
     ⍝ NB: it takes topic name, not topic handle
 
-    ∇ r←∆newTP;name
+    ∇ r←∆new_topic_partition;name
       :If 0=class.⎕NC name←'NewTopicPartitionList'
           class.⎕NA'I4 ',sharedlib,'|',name,' >P'
       :EndIf
@@ -72,56 +96,51 @@
     ∇
     ∇ r←topic_partition
       :Access public
-      r←∆newTP
+      r←∆new_topic_partition
     ∇
 
-    ∇ r←∆setTP(TPlist topicname);name
+    ∇ r←∆set_topic_partition(topic_partition_list topicname);name
       :If 0=class.⎕NC name←'SetTopicPartitionList'
           class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1'
       :EndIf
-      r←(class.⍎name)TPlist topicname
+      r←(class.⍎name)topic_partition_list topicname
       :If 0≠⊃r
           r←r
       :Else
           r←0 ''
       :EndIf
     ∇
-    ∇ r←set_topic_partition(TPlist topicname)
+    ∇ r←set_topic_partition(topic_partition_list topicname)
       :Access public
-      r←∆setTP TPlist topicname
+      r←∆set_topic_partition topic_partition_list topicname
     ∇
 
-    ∇ r←∆subscribeTP TPlist;name
+    ∇ r←∆subscribe_topic_partition topic_partition_list;name
       :If 0=class.⎕NC name←'SubscribeConsumerTPList'
           class.⎕NA'I4 ',sharedlib,'|',name,' P P >0T1 I4'
       :EndIf
-      r←(class.⍎name)cons TPlist 512 512
+      r←(class.⍎name)cons topic_partition_list 512 512
       :If 0≠⊃r
           r←r
       :Else
           r←0 ''
       :EndIf
     ∇
-    ∇ r←subscribeTP TPlist
+    ∇ r←subscribe_topic_partition topic_partition_list
       :Access public
-      r←∆subscribeTP TPlist
+      r←∆subscribe_topic_partition topic_partition_list
     ∇
 
-    ∇ r←subscribe topic_list;topic;TPlist;i
+    ∇ r←subscribe topic_list;topic;topic_partition_list;i
       :Access public
-      TPlist←∆newTP
+      
       :If 0≠≢topic_list
-          :If 1=⍴⍴↑topic_list
-              topic←topic_list
-              ∆setTP(TPlist topic)
-          :Else
-              :For i :In ⍳≢topic_list
-                  topic←⊃topic_list[i]
-                  ∆setTP(TPlist topic)
-              :EndFor
-          :EndIf
-      :EndIf
-      r←∆subscribeTP TPlist
+          topic_partition_list←∆new_topic_partition
+          ∆set_topic_partition¨ topic_partition_list,¨⊂¨(,⊆topic_list)~⊂''
+          r←∆subscribe_topic_partition topic_partition_list
+      :Else
+      ⍝ Throw error   
+      :EndIf 
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
@@ -158,9 +177,7 @@
           r←r[1 9]
       :EndSelect
     ∇
-
-
-    ∇ r←consume_rec
+    ∇ r←consume_record
       :Access public
       r←∆consume1 200 2048 200
       :If 0=⊃r

@@ -8,7 +8,5 @@
 
 
  l←consumer.topic_partition
- consumer.set_topic_partition l 'animals'
- ⍝ consumer.set_topic_partition l 'cars'
-
- consumer.subscribe l
+ consumer.set_topic_partition l'animals'
+ consumer.subscribe_topic_partition l

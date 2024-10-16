@@ -1,18 +1,18 @@
  Sample2 n;i
 
-
  consumer←⎕NEW Consumer
 
  consumer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
  consumer.configure'client.id' 'bhcgrs3550'
  consumer.configure'group.id' 'dyalog'
 
- l3←consumer.topic_partition
+ ⍝ Topics created with
+ ⍝ kafka-topics.sh --bootstrap-server localhost:9092 --create --topic "topic_name" --partitions "number_of_patitions"
 
- consumer.set_topic_partition l3'animals'
-⍝cons3.set_topic_partition l3'cars'
-
- consumer.subscribe l3
+ l←consumer.topic_partition
+ consumer.set_topic_partition l'animals'
+ consumer.set_topic_partition l'cars'
+ consumer.subscribe_topic_partition l
 
  producer←⎕NEW Producer
  producer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
@@ -20,19 +20,17 @@
 
 
  :For i :In ⍳n
-     producer.produce_rec ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕3|i))
+     producer.produce_record ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕3|i))
      :If 0=10|i
          producer.update_outstanding
      :EndIf
  :EndFor
 
-
-
- ⎕DL 1
+ producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
  producer.update_outstanding
 
-
- :While 0=⊃cr←consumer.consume_rec
+ ⎕DL 20
+ :While 0=⊃cr←consumer.consume_record
      (2⊃cr).(Topic Payload Key Partition)
  :EndWhile
  ⎕EX'producer'
