@@ -23,6 +23,15 @@ The rest of this document deals with the second layer, and has three aspects:
 2. Producer
 3. Consumer
 
+## Library initialisation
+
+Use `]link.create # aplsource` to bring in the code into your workspace, and then call the `Init` function:
+```
+Init
+```
+
+You should now be ready to use the library.
+
 ## Configuration
 
 The configuration format is a table of key and value columns. The key names are the standard Kafka configuration keys. Both the `Producer` and `Consumer` take the same configuration format. Here is what a consumer configuration could look like:

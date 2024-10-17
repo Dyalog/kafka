@@ -2,6 +2,8 @@
  :Select ⊃#.⎕WG'AplVersion'
  :CaseList 'Linux-64' 'Linux'
      file,←'.so'
+ :Case 'Mac-64'
+     file,←'.dylib'
  :Else
     ⍝ do nothing
  :EndSelect
