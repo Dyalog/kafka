@@ -1,35 +1,28 @@
 :Class Producer
 
-    :field private shared sharedlib←'kafka'
+    :field public shared kafka
     :field private prod
     :field private outstanding
-    :field private shared class←⊃⊃⎕class⎕this
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Constructor
 
-    ∇ r←∆new;name
-      :If 0=class.⎕NC name←'InitKafka'
-          class.⎕NA'I4 ',sharedlib,'|',name,' >P'
-      :EndIf
-      r←(class.⍎name)1
-      r←2⊃r
-    ∇
+
     ∇ make
       :Access Public
       :Implements constructor
-      prod←∆new
+      prod←kafka.new
       outstanding←0 2⍴0
     ∇
     ∇ make_config config;i;opt;val
       :Access Public
       :Implements constructor
-      prod←∆new
+      prod←kafka.new
       :If (2=≢⍴config)∧(2=2⊃⍴config)
           :For i :In ⍳≢config
               opt←⊃config[i;1]
               val←⊃config[i;2]
-              ∆setconf(opt val)
+              kafka.setconf(prod opt val)
           :EndFor
       :Else
        ⍝ todo error
@@ -40,62 +33,36 @@
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Destructor
 
-    ∇ r←∆del prod;name
-      :If 0=class.⎕NC name←'UninitProducer'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P'
-      :EndIf
-      r←(class.⍎name)prod
-    ∇
 
     ∇ unmake
       :Implements destructor
-      ∆del prod
+      kafka.UninitProducer prod
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Configuration Settings
 
-    ∇ r←∆setconf(opt val);name
-      :If 0=class.⎕NC name←'SetKafkaConf'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)prod opt val 512 512
-      :If 0≠⊃r
-          r←r
-      :Else
-          r←0 ''
-      :EndIf
-    ∇
     ∇ r←configure(opt val)
       :Access public
-      r←∆setconf(opt val)
+      r←kafka.setconf(prod opt val)
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
-    ⍝ Producer
+    ⍝ Producer    
+    
 
-    ∇ r←∆produce(topic_name partition payload);name
-      :If 0=class.⎕NC name←'Produce'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <I4 <0T1 >U8 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)prod topic_name partition payload 1 512 512
-    ∇
-    ∇ r←produce(topic_name partition payload);err;msgid;z
+    ∇ r←produce arg;topic;payload;key;partition;z;msgid;err
+    (topic payload key partition)←4↑ arg,  (≢arg)↓ '' '' '' ¯1
       :Access public
-      (z msgid err)←∆produce(topic_name partition payload)
+      (z msgid err)←kafka.produce prod topic payload key partition
       r←z,msgid
+      outstanding⍪←msgid 0
     ∇
 
 
-    ∇ r←∆produce1(topic_name payload key partition);name
-      :If 0=class.⎕NC name←'Produce1'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)prod topic_name payload(≢payload)key(≢key)partition 1 512 512
-    ∇
     ∇ r←produce_record record;err;msgid;z
       :Access public
-      (z msgid err)←∆produce1 record.asArg
+      (z msgid err)←kafka.produce prod, record.asArg
       r←z,msgid
       outstanding⍪←msgid 0
     ∇
@@ -103,19 +70,14 @@
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Delivery reports
 
-    ∇ r←∆delivery length;name
-      :If 0=class.⎕NC name←'DeliveryReport'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P >I8[] >I4[] =I4'
-      :EndIf
-      r←(class.⍎name)prod length length length
-    ∇
+
     ∇ r←delivery_report length;len;err;msgid;z
       :Access public
-      (z msgid err len)←∆delivery(length)
+      (z msgid err len)←kafka.delivery prod length
       r←z((len↑msgid),[1.5](len↑err))
     ∇
 
-    ∇ r←update_outstanding;err;del
+    ∇ r←update_outstanding;err;del;ok;ix
       :Access public
       :While 1
           (err del)←delivery_report 100
@@ -135,22 +97,16 @@
 
     ∇ r←delivery_report_err length;len;err;msgid;z
       :Access public
-      (z msgid err len)←∆delivery(length)
+      (z msgid err len)←kafka.delivery prod  length
      
       r←z,((len↑msgid),[1.5](len↑err))
       r←r[⍸0≠r[;3];]
     ∇
 
-    ∇ r←∆errormsg errid;name
-      :If 0=class.⎕NC name←'DRMessageError'
-          class.⎕NA'I4 ',sharedlib,'|',name,' <I4 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)errid 512 512
-    ∇
 
     ∇ r←parse_error errid
       :Access public
-      r←∆errormsg(errid)
+      r←kafka.errormsg(errid)
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝ Helpers

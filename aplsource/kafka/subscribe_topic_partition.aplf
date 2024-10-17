@@ -1,0 +1,11 @@
+ r←subscribe_topic_partition(cons topic_partition_list)
+ ⍝ Subscribe to a list of topics
+⍝ cons Instance of a COnsumer
+⍝ topic_partition_list list of topics
+
+ r←SubscribeConsumerTPList cons topic_partition_list 512 512
+ :If 0≠⊃r
+     r←r
+ :Else
+     r←0 ''
+ :EndIf

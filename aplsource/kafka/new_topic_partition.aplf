@@ -1,0 +1,4 @@
+ r←new_topic_partition
+ ⍝ Create a new topic list
+ r←NewTopicPartitionList 1
+ r←2⊃r

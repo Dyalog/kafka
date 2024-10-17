@@ -1,0 +1,3 @@
+ r←version
+ ⍝ get the version of the librdkafka
+ r←Version 512 512

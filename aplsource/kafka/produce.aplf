@@ -1,0 +1,8 @@
+ r←produce(prod topic_name payload key partition)
+ ⍝ Produce a messages to the kafka server
+ ⍝ prod porducer instance
+ ⍝ topic_name topic name
+ ⍝ payload payload
+ ⍝ key key
+ ⍝ partition partition
+ r←Produce prod topic_name payload(≢payload)key(≢key)partition 1 512 512

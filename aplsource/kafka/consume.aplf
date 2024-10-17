@@ -1,0 +1,18 @@
+ r←consume(cons tl pl kl)
+ ⍝ Consume the next message
+ ⍝ cons the consumer instance
+ ⍝ tl topic lenght
+ ⍝ pl payload length
+ ⍝ kl key length
+
+ r←Consume cons tl tl pl pl kl kl 1 512 512
+ :Select ⊃r
+ :Case 0   ⍝ we got a message
+     r←0,(r[3 5 7]↑¨r[2 4 6]),8⊃r
+ :Case 1   ⍝ no message
+     r←r[1 9]
+ :Case 2   ⍝ we are need more space
+     r←consume 10+r[3 5 7]
+ :Else    ⍝ Kafka error
+     r←r[1 9]
+ :EndSelect

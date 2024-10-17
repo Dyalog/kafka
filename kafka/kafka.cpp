@@ -125,45 +125,8 @@ LIBRARY_API int SetKafkaConf(void* kafka, char* key, char* val, char* errtxt, in
 }
 
 
-LIBRARY_API int Produce(void* prod, char* topic_name, int *partition, char* payload, uint64_t* msgid, char* errtxt, int len) 
-{
-	kafka_struct* pr = (kafka_struct*)prod;
 
-	if (pr->rk == NULL) {
-
-		// Delivery CB
-		rd_kafka_conf_set_dr_msg_cb(pr->conf, on_delivery);
-		delivery_reports* drs = (delivery_reports*)calloc(1, sizeof(delivery_reports));
-		drs->counter = 0;
-		drs->counter_limit = 100;
-		drs->drs = (delivery_report**)calloc(100, sizeof(delivery_report*));
-		rd_kafka_conf_set_opaque(pr->conf, (void*)drs);
-
-		rd_kafka_t* rk = rd_kafka_new(RD_KAFKA_PRODUCER, pr->conf, errtxt, len);
-		pr->rk = rk;
-
-		//ok?
-		pr->conf = NULL;
-	}
-
-	// Here we are keeping the default topic conf by setting it to NULL (rd_kafka_topic_conf_t*)topic_conf
-	rd_kafka_topic_t* rkt = rd_kafka_topic_new(pr->rk, topic_name, NULL);
-
-	*msgid = global_counter++;
-
-	return rd_kafka_produce(rkt,
-		*partition,
-		RD_KAFKA_MSG_F_COPY,
-		payload,
-		strlen(payload),
-		NULL, // key, defines the logic by which kafka partition automatically. If NULL it is itself automatic
-		0,
-		(void*)*msgid);
-
-	return 0;
-}
-
-LIBRARY_API int Produce1(void* prod, char* topic,  char* payload, uint32_t paylen, char* key,uint32_t keylen,  int32_t partition, uint64_t* msgid, char* errtxt, int len)
+LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen, char* key,uint32_t keylen,  int32_t partition, uint64_t* msgid, char* errtxt, int len)
 {
 	int kerr = 0;
 	kafka_struct* pr = (kafka_struct*)prod;
@@ -248,30 +211,8 @@ LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt,
 	return 0;
 }
 
-LIBRARY_API int Consume(void* cons, char* consumed_msg, char* errtxt, int len)
-{
-	kafka_struct* co = (kafka_struct*)cons;
-	rd_kafka_message_t* rkmessage;
-	rkmessage = rd_kafka_consumer_poll(co->rk, 500);
 
-	if (rkmessage) {
-		char* message;
-		message = (char*)rkmessage->payload;
-		if (strlen(message)<len) {
-			strncpy_s(errtxt, len, message, strlen(message));
-		}
-		else {
-			strncpy_s(errtxt, len, "message too long", strlen("message too long"));
-		}
-		rd_kafka_message_destroy(rkmessage);
-	}
-	else {
-		strncpy_s(errtxt, len, "no msg", strlen("no msg"));
-	}
-	return 0;
-}
-
-LIBRARY_API int Consume1(void* cons, char* topic,uint32_t *topiclen, char* payload,uint32_t *paylen,char* key, uint32_t *keylen,int32_t *partition,  char* errtxt, int len)
+LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payload,uint32_t *paylen,char* key, uint32_t *keylen,int32_t *partition,  char* errtxt, int len)
 {
 	kafka_struct* co = (kafka_struct*)cons;
 	rd_kafka_message_t* rkmessage;
@@ -401,4 +342,42 @@ LIBRARY_API int DelTopicConf(void* topicconf)
 LIBRARY_API int SetTopicConf(void* topicconf, char* key, char* val, char* errtxt, int len)
 {
 	return rd_kafka_topic_conf_set((rd_kafka_topic_conf_t*)topicconf, key, val, errtxt, len);
+}
+
+void Add(char* buffer,const char* str, int* poff, int  max)
+{
+	int len = strlen(str);
+
+	if (buffer != NULL && max >= len + *poff)
+		memcpy(buffer + *poff, str, len);
+	*poff += len;
+}
+
+LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
+{
+	int off = 0;
+	int ret = 0;
+	Add(buffer, "{", &off, *psize);
+	Add(buffer, "\"Version\":\"0.1\",\"Patterns\":[", &off, *psize);
+	Add(buffer, "\"I4 %P|Version >0T1 U4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|InitKafka >P\",", &off, *psize);
+	Add(buffer, "\"I4 %P|UninitProducer P\",", &off, *psize);
+	Add(buffer, "\"I4 %P|UninitConsumer p\",", &off, *psize);
+	Add(buffer, "\"I4 %P|SetKafkaConf P <0T1 <0T1 >0T1 I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|NewTopicPartitionList >P\",", &off, *psize);
+	Add(buffer, "\"I4 %P|SetTopicPartitionList P <0T1\",", &off, *psize);
+	Add(buffer, "\"I4 %P|SubscribeConsumerTPList P P >0T1 I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|DeliveryReport P >I8[] >I4[] =I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|DRMessageError <I4 >0T1 I4\"", &off, *psize);
+	Add(buffer, "]", &off, *psize);
+	Add(buffer, "}", &off, *psize);
+
+	if (buffer != NULL && off < *psize)
+		*(buffer + off) = 0;
+	else
+		ret = off + 1;
+	*psize = off + 1;
+	return ret;
 }

@@ -1,34 +1,26 @@
 :Class Consumer
 
-    :field private shared sharedlib←'kafka'
+    :field public shared kafka
     :field private cons
     :field private topic_partition_list
-    :field private shared class←⊃⊃⎕class⎕this
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Constructor
 
-    ∇ r←∆new;name
-      :If 0=class.⎕NC name←'InitKafka'
-          class.⎕NA'I4 ',sharedlib,'|',name,' >P'
-      :EndIf
-      r←(class.⍎name)1
-      r←2⊃r
-    ∇
     ∇ make
       :Access Public
       :Implements constructor
-      cons←∆new
+      cons←kafka.new
     ∇
     ∇ make_config config;i;opt;val
       :Access Public
       :Implements constructor
-      cons←∆new
+      cons←kafka.new
       :If (2=≢⍴config)∧(2=2⊃⍴config)
           :For i :In ⍳≢config
               opt←⊃config[i;1]
               val←⊃config[i;2]
-              ∆setconf(opt val)
+              kafka.setconf(cons opt val)
           :EndFor
       :Else
        ⍝ todo error
@@ -37,12 +29,12 @@
     ∇ make_config_topic(config topic_list);i;opt;val
       :Access Public
       :Implements constructor
-      cons←∆new
+      cons←kafka.new
       :If (2=≢⍴config)∧(2=2⊃⍴config)
           :For i :In ⍳≢config
               opt←⊃config[i;1]
               val←⊃config[i;2]
-              ∆setconf(opt val)
+              kafka.setconf(cons opt val)
           :EndFor
       :Else
        ⍝ todo error
@@ -53,91 +45,45 @@
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Destructor
 
-    ∇ r←∆del cons;name
-      :If 0=class.⎕NC name←'UninitConsumer'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P'
-      :EndIf
-      r←(class.⍎name)cons
-    ∇
     ∇ unmake
       :Implements destructor
-      ∆del cons
+      kafka.UninitConsumer cons
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Configuration Settings
 
-    ∇ r←∆setconf(opt val);name
-      :If 0=class.⎕NC name←'SetKafkaConf'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1 <0T1 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)cons opt val 512 512
-      :If 0≠⊃r
-          r←r
-      :Else
-          r←0 ''
-      :EndIf
-    ∇
     ∇ r←configure(opt val)
       :Access public
-      r←∆setconf opt val
+      r←kafka.setconf cons opt val
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Set topic and partition given a list name.
     ⍝ NB: it takes topic name, not topic handle
 
-    ∇ r←∆new_topic_partition;name
-      :If 0=class.⎕NC name←'NewTopicPartitionList'
-          class.⎕NA'I4 ',sharedlib,'|',name,' >P'
-      :EndIf
-      r←(class.⍎name)1
-      r←2⊃r
-    ∇
     ∇ r←topic_partition
       :Access public
-      r←∆new_topic_partition
+      r←kafka.new_topic_partition
     ∇
 
-    ∇ r←∆set_topic_partition(topic_partition_list topicname);name
-      :If 0=class.⎕NC name←'SetTopicPartitionList'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P <0T1'
-      :EndIf
-      r←(class.⍎name)topic_partition_list topicname
-      :If 0≠⊃r
-          r←r
-      :Else
-          r←0 ''
-      :EndIf
-    ∇
     ∇ r←set_topic_partition(topic_partition_list topicname)
       :Access public
-      r←∆set_topic_partition topic_partition_list topicname
+      r←kafka.set_topic_partition topic_partition_list topicname
     ∇
 
-    ∇ r←∆subscribe_topic_partition topic_partition_list;name
-      :If 0=class.⎕NC name←'SubscribeConsumerTPList'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P P >0T1 I4'
-      :EndIf
-      r←(class.⍎name)cons topic_partition_list 512 512
-      :If 0≠⊃r
-          r←r
-      :Else
-          r←0 ''
-      :EndIf
-    ∇
     ∇ r←subscribe_topic_partition topic_partition_list
       :Access public
-      r←∆subscribe_topic_partition topic_partition_list
+      r←kafka.subscribe_topic_partition cons topic_partition_list
     ∇
 
     ∇ r←subscribe topic_list;topic;topic_partition_list;i
       :Access public
       
       :If 0≠≢topic_list
-          topic_partition_list←∆new_topic_partition
-          ∆set_topic_partition¨ topic_partition_list,¨⊂¨(,⊆topic_list)~⊂''
-          r←∆subscribe_topic_partition topic_partition_list
+          topic_partition_list←topic_partition
+          set_topic_partition¨ topic_partition_list,¨⊂¨(,⊆topic_list)~⊂''
+          r←subscribe_topic_partition topic_partition_list
       :Else
       ⍝ Throw error   
       :EndIf 
@@ -145,41 +91,16 @@
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Consumer
-    ∇ r←∆consume;name
-      :If 0=class.⎕NC name←'Consume'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P >0T1 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)cons 512 512 512
-      :If 0≠⊃r
-          r←'err'
-      :Else
-          r←3⊃r
-      :EndIf
-    ∇
+
     ∇ r←consume
       :Access public
-      r←∆consume
+      r←kafka.consume cons 200 2048 200
     ∇
 
-    ∇ r←∆consume1(tl pl kl);name
-      :If 0=class.⎕NC name←'Consume1'
-          class.⎕NA'I4 ',sharedlib,'|',name,' P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 I4'
-      :EndIf
-      r←(class.⍎name)cons tl tl pl pl kl kl 1 512 512
-      :Select ⊃r
-      :Case 0   ⍝ we got a message
-          r←0,(r[3 5 7]↑¨r[2 4 6]),8⊃r
-      :Case 1   ⍝ no message
-          r←r[1 9]
-      :Case 2   ⍝ we are need more space
-          r←∆consume1 10+r[3 5 7]
-      :Else    ⍝ Kafka error
-          r←r[1 9]
-      :EndSelect
-    ∇
+
     ∇ r←consume_record
       :Access public
-      r←∆consume1 200 2048 200
+      r←kafka.consume cons 200 2048 200
       :If 0=⊃r
           r←0(⎕NEW #.Record(r[2 3 4 5]))
       :EndIf
@@ -194,3 +115,4 @@
     ∇
 
 :EndClass
+

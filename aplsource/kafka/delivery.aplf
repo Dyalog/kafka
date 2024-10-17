@@ -1,0 +1,5 @@
+ r←delivery(prod length)
+ ⍝ return the delivery reports for a producer
+ ⍝ prod producer instance
+ ⍝ length max number of delivery reports
+ r←DeliveryReport prod length length length
