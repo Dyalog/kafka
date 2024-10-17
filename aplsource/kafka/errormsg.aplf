@@ -1,0 +1,4 @@
+ r←errormsg errid
+ ⍝ get the text for an error number
+ ⍝ errid  error  number
+ r←DRMessageError errid 512 512

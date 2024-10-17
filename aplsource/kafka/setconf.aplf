@@ -1,0 +1,12 @@
+ r←setconf(inst opt val)
+⍝ set an option for a kafka instance
+⍝ inst the kafka instance could be either Producer or Consumer
+⍝ opt  option
+⍝ val   value
+
+ r←SetKafkaConf inst opt val 512 512
+ :If 0≠⊃r
+     r←r
+ :Else
+     r←0 ''
+ :EndIf

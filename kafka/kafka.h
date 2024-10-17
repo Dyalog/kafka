@@ -12,8 +12,25 @@
 #endif
 extern "C"
 {
-
+	/* Version 
+	*	get the textual version and the native version number of Kafka
+	*	args
+	*     version buffer for the textual representation of the version of kafka
+	*     len size of the buffer provided
+	* 
+	*  return kafka version in ative format (HEX)
+	*/
 	LIBRARY_API int Version(char* version, int len);
+
+	/* Describe 
+	*	Describes the functions exposed from the sharedlibrary
+	* 
+	*	args
+	*		buffer space the the json description of the functions exported
+	*		psize  size of the buffer provide in entry and size of space needed on exit 
+	*/
+	LIBRARY_API int32_t Describe(char* buffer, int32_t* psize);
+
 
 	LIBRARY_API int InitKafka(void** kafka);
 	//LIBRARY_API int UninitKafka(void* kafka);
@@ -31,11 +48,9 @@ extern "C"
 	LIBRARY_API int SetTopicPartitionList(void* subscr, char* topic);
 	
 	LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt, int len);
-	LIBRARY_API int Produce(void* prod, char* topic_name, int* partition, char* payload, uint64_t* msgid, char* errtxt, int len);
-	LIBRARY_API int Produce1(void* prod, char* topic, char* payload, uint32_t paylen, char* key, uint32_t keylen, int32_t partition, uint64_t* msgid, char* errtxt, int len);
+	LIBRARY_API int Produce(void* prod, char* topic, char* payload, uint32_t paylen, char* key, uint32_t keylen, int32_t partition, uint64_t* msgid, char* errtxt, int len);
 
-	LIBRARY_API int Consume(void* cons, char* consumed_msg, char* errtxt, int len);
-	LIBRARY_API int Consume1(void* cons, char* topic, uint32_t* topiclen, char* payload, uint32_t* paylen, char* key, uint32_t* keylen, int32_t* partition, char* errtxt, int len);
+	LIBRARY_API int Consume(void* cons, char* topic, uint32_t* topiclen, char* payload, uint32_t* paylen, char* key, uint32_t* keylen, int32_t* partition, char* errtxt, int len);
 
 	LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, int* plength);
 	LIBRARY_API int DRMessageError(int* err, char* errtxt, int length);

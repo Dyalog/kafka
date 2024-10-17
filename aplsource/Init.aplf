@@ -1,0 +1,4 @@
+Init
+kafka.NA 'kafka'
+Producer.kafka←#.kafka
+Consumer.kafka←#.kafka

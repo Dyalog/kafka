@@ -1,0 +1,15 @@
+ NA file;Describe;res;funcs;z
+ :Select ⊃#.⎕WG'AplVersion'
+ :CaseList 'Linux-64' 'Linux'
+     file,←'.so'
+ :Else
+    ⍝ do nothing
+ :EndSelect
+ ⎕NA'I4 ',file,'|Describe >0T1 =I4'
+ :If 0=⊃res←Describe 1024 1024
+     funcs←⎕JSON 2⊃res
+     z←('%P'⎕R file⍠('Regex' 0))funcs.Patterns
+     ⎕NA¨z
+ :Else
+     'Shared lib failed'⎕SIGNAL 6
+ :EndIf

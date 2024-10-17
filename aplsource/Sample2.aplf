@@ -1,4 +1,4 @@
- Sample2 n;i
+ Sample2 n;i;start;cr
 
  consumer←⎕NEW Consumer
 
@@ -29,9 +29,20 @@
  producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
  producer.update_outstanding
 
- ⎕DL 20
- :While 0=⊃cr←consumer.consume_record
+  start←3⊃⎕ai
+ :While 1
+ cr←consumer.consume_record
+    :if 1=⊃cr
+    :andif 20000>(3⊃⎕ai)-start
+       ⎕dl .2
+       :continue
+     :elseif 0=⊃cr
      (2⊃cr).(Topic Payload Key Partition)
+     start←0
+    :else
+       cr
+       :leave
+     :endif
  :EndWhile
- ⎕EX'producer'
+⎕EX'producer'
  ⎕EX'consumer'
