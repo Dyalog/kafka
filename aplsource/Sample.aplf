@@ -1,39 +1,39 @@
-Sample
+ Sample
+
+ ⍝ Topics created with
+ ⍝ kafka-topics.sh --bootstrap-server localhost:9092 --create --topic "topic_name" --partitions "number_of_patitions"
+
+ consumer←⎕NEW Consumer
+
+ consumer.configure'bootstrap.servers' 'localhost:9092' ⍝'grs3550.insight.local:9092'
+ consumer.configure'client.id' 'martina'⍝'bhcgrs3550'
+ consumer.configure'group.id' 'dyalog'
+
+ l←consumer.topic_partition
+
+ consumer.set_topic_partition l'animals'
+ consumer.subscribe_topic_partition l
 
 
- cons←⎕NEW Cons
 
- cons.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
- cons.SetConfVal'client.id' 'bhcgrs3550'
- cons.SetConfVal'group.id' 'dyalog'
+ bb←⎕NEW #.Record('animals' 'Blackbird' 'birds')
+ so←⎕NEW #.Record('animals' 'Sole' 'fish')
+ ef←⎕NEW #.Record('animals' 'Elefant' 'mamal')
 
- l3←cons.NewTopicPartition
+ producer←⎕NEW Producer
+ producer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
+ producer.configure'client.id' 'martina'⍝'bhc'
 
- cons.SetTopicPartition l3'animals'
-⍝ cons3.SetTopicPartition l3'cars'
+ producer.produce_record bb
+ producer.produce_record so
+ producer.produce_record ef
 
- cons.SubscribeConsTP l3
+ ⎕DL 1
+ producer.delivery_report 13
 
-
-
-bb←⎕new #.Record ('animals' 'Blackbird' 'birds' )
-so←⎕new #.Record ('animals' 'Sole' 'fish' )
-ef←⎕new #.Record ('animals' 'Elefant' 'mamal' )
-
-prod←⎕NEW Prod
-prod.SetConfVal'bootstrap.servers' 'grs3550.insight.local:9092'
-prod.SetConfVal'client.id' 'bhc'
-
-prod.ProduceRec bb
-prod.ProduceRec so
-prod.ProduceRec ef
-
-⎕dl 1
-prod.DeliveryReport 13
-
-
-:while 0=⊃cr←cons.ConsumeRec
-  (2⊃cr).(Topic Payload Key Partition)
-:endwhile
-⎕ex 'prod'
-⎕ex 'cons'
+ ⎕DL 20
+ :While 0=⊃cr←consumer.consume_record
+     (2⊃cr).(Topic Payload Key Partition)
+ :EndWhile
+ ⎕EX'producer'
+ ⎕EX'consumer'
