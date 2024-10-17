@@ -1,5 +1,4 @@
 :Class Consumer
-
     :field public shared kafka
     :field private cons
     :field private topic_partition_list
@@ -11,31 +10,25 @@
       :Access Public
       :Implements constructor
       cons←kafka.new
-    ∇
+    ∇          
+
     ∇ make_config config;i;opt;val
       :Access Public
       :Implements constructor
       cons←kafka.new
-      :If (2=≢⍴config)∧(2=2⊃⍴config)
-          :For i :In ⍳≢config
-              opt←⊃config[i;1]
-              val←⊃config[i;2]
-              kafka.setconf(cons opt val)
-          :EndFor
+      :If (2=⍴⍴config)∧(2=¯1↑⍴config)  
+          configure¨↓config
       :Else
        ⍝ todo error
       :EndIf
-    ∇
+    ∇ 
+
     ∇ make_config_topic(config topic_list);i;opt;val
       :Access Public
       :Implements constructor
       cons←kafka.new
-      :If (2=≢⍴config)∧(2=2⊃⍴config)
-          :For i :In ⍳≢config
-              opt←⊃config[i;1]
-              val←⊃config[i;2]
-              kafka.setconf(cons opt val)
-          :EndFor
+      :If (2=⍴⍴config)∧(2=¯1↑⍴config)  
+          configure¨↓config
       :Else
        ⍝ todo error
       :EndIf
@@ -91,12 +84,10 @@
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Consumer
-
     ∇ r←consume
       :Access public
       r←kafka.consume cons 200 2048 200
     ∇
-
 
     ∇ r←consume_record
       :Access public
@@ -106,7 +97,6 @@
       :EndIf
     ∇
 
-
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Helpers
     ∇ r←get_consumer
@@ -115,4 +105,5 @@
     ∇
 
 :EndClass
+
 

@@ -1,29 +1,23 @@
 :Class Producer
-
     :field public shared kafka
     :field private prod
     :field private outstanding
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Constructor
-
-
     ∇ make
       :Access Public
       :Implements constructor
       prod←kafka.new
       outstanding←0 2⍴0
     ∇
+
     ∇ make_config config;i;opt;val
       :Access Public
       :Implements constructor
       prod←kafka.new
-      :If (2=≢⍴config)∧(2=2⊃⍴config)
-          :For i :In ⍳≢config
-              opt←⊃config[i;1]
-              val←⊃config[i;2]
-              kafka.setconf(prod opt val)
-          :EndFor
+      :If (2=⍴⍴config)∧(2=¯1↑⍴config)
+          configure¨↓config
       :Else
        ⍝ todo error
       :EndIf
@@ -32,8 +26,6 @@
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Destructor
-
-
     ∇ unmake
       :Implements destructor
       kafka.UninitProducer prod
@@ -41,7 +33,6 @@
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Configuration Settings
-
     ∇ r←configure(opt val)
       :Access public
       r←kafka.setconf(prod opt val)
@@ -69,8 +60,6 @@
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Delivery reports
-
-
     ∇ r←delivery_report length;len;err;msgid;z
       :Access public
       (z msgid err len)←kafka.delivery prod length
@@ -116,3 +105,4 @@
     ∇
 
 :EndClass
+
