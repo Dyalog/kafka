@@ -11,12 +11,12 @@ The interface presented below is a work in progress, and its semantics should no
 For the first milestone of this project, we aim to support the `Producer` and `Consumer` aspects only. This means that there will be no Dyalog APL version of the `AdminClient` API which interacts with the cluster (and topic) configuration. All topic creation must therefore be done outside Dyalog APL. 
 
 Our initial aim is to provide as thin as possible a layer on top of librdkafka, upon which richer Dyalog interfaces can be based. This falls into two abstraction layers: 
-1. The API layer itself (`api.apln`), mapping the librdkafka functions into APL.
+1. The API layer itself, mapping the librdkafka functions into APL.
 2. A convenience APL layer built on top of that.
 
 The semantics of the lower layer are largely dictated by the wrapped library, with a few work-arounds required by the Dyalog FFI. We don't expect Dyalog APL application developers will want to use this layer directly.
 
-The convenience APL layer will likely change rapidly and without notice as the design progresses. It is provided solely as an illustration of what will be covered, and we're still investigating the exact makeup of this layer. 
+The convenience APL layer will likely change rapidly and without notice as the design progresses. It is currently provided solely as an illustration of what will be covered, and we're still investigating the exact makeup of this layer. 
 
 The rest of this document deals with the second layer, and has three aspects:
 1. Configuration
@@ -25,9 +25,9 @@ The rest of this document deals with the second layer, and has three aspects:
 
 ## Library initialisation
 
-Use `]link.create # aplsource` to bring in the code into your workspace, and then call the `Init` function:
+Use `]link.create # aplsource` to bring in the code into your workspace, and then call the `Init` function, with the path to the directory where the shared library resides:
 ```
-Init
+Init 'path/to/dir/housing/kafka/shared/lib'
 ```
 
 You should now be ready to use the library.
@@ -60,6 +60,7 @@ which specifies a client with the id `bhcgrs3550`, belonging to the consumer gro
 ```
 
 ## Producer scope
+
 Assumption: you have created a configuration table as per above.
 
 1. Create a producer
@@ -114,17 +115,7 @@ Assumption: you have created a configuration table as per above.
     ```apl
     consumer.subscribe 'animals' 'cars' 'plants'
     ```
-3. Alternatively, assign specific topic partitions to a consumer instance
-    If we have a partitioned topic, we can specify a specific partition. Let's say our `animals` topic was created as
-    ```other
-    kafka-topics.sh --bootstrap-server localhost:9092 --create --topic animals --partitions 3
-    ```
-    ```apl
-    consumer.assign ⊂'animals' 2
-    ```
-    A partition is represented by a two-element vector of topic name and topic-id.
-
-4. Consume
+3. Consume
 
     Consume messages in a loop. Kafka parallelism is achieved by consumer groups and partitioned topics. The `Record` interface allow for access by the names `Topic`, `Payload`, `Key`, `Partition`.
     ```apl
@@ -132,7 +123,7 @@ Assumption: you have created a configuration table as per above.
         (2⊃rec).(Topic Payload Key Partition)
     :EndWhile
     ```
-5. Destroy consumer
+4. Destroy consumer
     ```apl
     ⎕EX'consumer'
     ```
@@ -143,26 +134,29 @@ Note: the semantics are subject to change.
 
 Here is a complete example showing both a `Producer` and a `Consumer`.
 
+Create three topics:
+```
+kafka-topics.sh \
+  --bootstrap-server localhost:9092 \
+  --create --topic "animals" \
+  --partitions 3
+
+kafka-topics.sh \
+  --bootstrap-server localhost:9092 \
+  --create --topic "cars" \
+  --partitions 3
+
+kafka-topics.sh \
+  --bootstrap-server localhost:9092 \
+  --create --topic "plants" \
+  --partitions 3
+```
+
+Now, run the following function:
 ```apl
 Example n;i  
 ⍝ Produce and consume `n` messages
 ⍝
-⍝ Topics created with
-⍝
-⍝     kafka-topics.sh \
-⍝       --bootstrap-server localhost:9092 \
-⍝       --create --topic "animals" \
-⍝       --partitions 3
-⍝  
-⍝     kafka-topics.sh \
-⍝       --bootstrap-server localhost:9092 \
-⍝       --create --topic "cars" \
-⍝       --partitions 3
-⍝
-⍝     kafka-topics.sh \
-⍝       --bootstrap-server localhost:9092 \
-⍝       --create --topic "plants" \
-⍝       --partitions 3
 
 ⍝ Set up the consumer first
 config←0 2⍴⍬
