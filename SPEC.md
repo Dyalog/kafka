@@ -25,9 +25,9 @@ The rest of this document deals with the second layer, and has three aspects:
 
 ## Library initialisation
 
-Use `]link.create # aplsource` to bring in the code into your workspace, and then call the `Init` function:
+Use `]link.create # aplsource` to bring in the code into your workspace, and then call the `Init` function, with the path to the directory where the shared library resides:
 ```
-Init
+Init 'path/to/dir/housing/kafka/shared/lib'
 ```
 
 You should now be ready to use the library.
