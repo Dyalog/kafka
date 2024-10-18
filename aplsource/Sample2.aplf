@@ -1,13 +1,25 @@
  Sample2 n;i;start;cr
 
+ ⍝ Topics created with
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "animals" \
+ ⍝       --partitions 3
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "cars" \
+ ⍝       --partitions 3
+
+ ⍝ Call to Init function
+ Init
+
  consumer←⎕NEW Consumer
 
  consumer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
  consumer.configure'client.id' 'bhcgrs3550'
  consumer.configure'group.id' 'dyalog'
-
- ⍝ Topics created with
- ⍝ kafka-topics.sh --bootstrap-server localhost:9092 --create --topic "topic_name" --partitions "number_of_patitions"
 
  l←consumer.topic_partition
  consumer.set_topic_partition l'animals'
@@ -29,20 +41,20 @@
  producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
  producer.update_outstanding
 
-  start←3⊃⎕ai
+ start←3⊃⎕AI
  :While 1
- cr←consumer.consume_record
-    :if 1=⊃cr
-    :andif 20000>(3⊃⎕ai)-start
-       ⎕dl .2
-       :continue
-     :elseif 0=⊃cr
-     (2⊃cr).(Topic Payload Key Partition)
-     start←0
-    :else
-       cr
-       :leave
-     :endif
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         ⎕DL 0.2
+         :Continue
+     :ElseIf 0=⊃cr
+         (2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
  :EndWhile
-⎕EX'producer'
+ ⎕EX'producer'
  ⎕EX'consumer'
