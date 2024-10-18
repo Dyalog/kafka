@@ -1,3 +1,6 @@
 
 /.vs
 /x64
+/kafka/*.vcxproj.filters
+/kafka/*.vcxproj.user
+/packages
