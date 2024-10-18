@@ -18,7 +18,7 @@
  ⍝       --partitions 3
 
  ⍝ Call to Init function
- Init
+ Init 'path/to/dir/housing/kafka/shared/lib'
 
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'

@@ -13,7 +13,7 @@
  ⍝       --partitions 3
 
  ⍝ Call to Init function
- Init
+ Init 'path/to/dir/housing/kafka/shared/lib'
 
  consumer←⎕NEW Consumer
 
@@ -23,7 +23,7 @@
 
  l←consumer.topic_partition
  consumer.set_topic_partition l'animals'
- consumer.set_topic_partition l'cars'
+ ⍝consumer.set_topic_partition l'cars'
  consumer.subscribe_topic_partition l
 
  producer←⎕NEW Producer
@@ -38,7 +38,7 @@
      :EndIf
  :EndFor
 
- producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
+ ⍝producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
  producer.update_outstanding
 
  start←3⊃⎕AI
