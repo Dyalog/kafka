@@ -42,13 +42,16 @@ Build the wrapper:
 cd <path>/kafka
 c++ -shared -fpic -oMACbin/kafka.dylib -DFORMAC  kafka/kafka.cpp -lrdkafka -L/opt/homebrew/opt/librdkafka/lib -I/opt/homebrew/opt/librdkafka/include/librdkafka
 ```
+
+## Initialising
+
 Now start Dyalog. You need a running Kafka instance. In the session, type
 
 ```apl
-]cd path-to-kafka  
+]cd path/to/kafka/repo
 ]link.create # aplsource
 ```
-In the `Consumer` and `Producer` classes, modify the property `sharedlib`:
+Initialise the library, passing as the argument the path where the `kafka.[so|a|dylib]` shared library was installed:
 ```apl
-:field private shared sharedlib←'MACbin/kafka.dylib'
+Init 'path/to/dir/housing/shared/lib'
 ```
