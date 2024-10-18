@@ -362,7 +362,7 @@ LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
 	Add(buffer, "\"I4 %P|Version >0T1 U4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|InitKafka >P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|UninitProducer P\",", &off, *psize);
-	Add(buffer, "\"I4 %P|UninitConsumer p\",", &off, *psize);
+	Add(buffer, "\"I4 %P|UninitConsumer P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SetKafkaConf P <0T1 <0T1 >0T1 I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|NewTopicPartitionList >P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SetTopicPartitionList P <0T1\",", &off, *psize);

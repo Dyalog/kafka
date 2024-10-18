@@ -1,5 +1,6 @@
- NA file;Describe;res;funcs;z
- :Select ⊃#.⎕WG'AplVersion'
+ NA file;Describe;res;funcs;z;version;pp
+ version←#.⎕WG'AplVersion'
+ :Select ⊃version
  :CaseList 'Linux-64' 'Linux'
      file,←'.so'
  :Case 'Mac-64'
@@ -11,6 +12,14 @@
  :If 0=⊃res←Describe 1024 1024
      funcs←⎕JSON 2⊃res
      z←('%P'⎕R file⍠('Regex' 0))funcs.Patterns
+     :if 17>  2 ⊃⎕vfi {(¯1+⍵⍳'.')↑⍵}   2⊃version
+        :if '-64' ≡ ¯3↑⊃version
+           pp←' U8' ' >U8'
+        :else
+           pp←' U4' ' >U4'
+        :endif
+        z←(' P' ' >P'⎕R pp⍠('Regex' 0)) ¨ z
+     :endif
      ⎕NA¨z
  :Else
      'Shared lib failed'⎕SIGNAL 6
