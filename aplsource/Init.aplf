@@ -1,4 +1,5 @@
-Init
-kafka.NA 'kafka'
+Init path
+path,← '/' {0=≢⍵:'' ⋄ ∨/'/\'∊¯1↑⍵:''⋄ ⍺   } path
+kafka.NA path,'kafka'
 Producer.kafka←#.kafka
 Consumer.kafka←#.kafka
