@@ -8,20 +8,9 @@ At the moment, this library must be built from source. Clone this repository. Yo
 
 ### Windows
 
-Open the kafka.sln in  Visual Studio 2022, and build the project.
+Open `kafka.sln` in Visual Studio 2022, and build the project.
 
-Copy all the dlls from the OutDir ( kafka\x64\Debug  for 64 bit debug version) to a directory and Start Apl in that directory.
-
-
-In apl 
-```
-     ]link.Create # <path>\aplsource
-     Init <path>   ⍝ to load the dll
-```
-
-
-
-TODO
+Copy all the dlls from the OutDir (`kafka\x64\Debug` for 64 bit debug version) to a directory and `Start Apl` in that directory.
 
 ### Linux
 
@@ -53,5 +42,5 @@ Now start Dyalog. You need a running Kafka instance. In the session, type
 ```
 Initialise the library, passing as the argument the path where the `kafka.[so|a|dylib]` shared library was installed:
 ```apl
-Init 'path/to/dir/housing/shared/lib'
+Init 'path/to/dir/housing/shared/lib' ⍝ to load the dll
 ```
