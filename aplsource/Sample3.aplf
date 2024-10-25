@@ -26,8 +26,8 @@
  config⍪←'group.id' 'dyalog'
 
  consumer←⎕NEW Consumer config
-
  consumer.subscribe'animals' 'cars' 'plants'
+ ⎕DL 5
 
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'

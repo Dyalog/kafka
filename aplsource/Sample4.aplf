@@ -28,6 +28,7 @@
  topic_list←'animals' 'cars' 'plants'
 
  consumer←⎕NEW Consumer(config topic_list)
+ ⎕DL 5
 
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'
