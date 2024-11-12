@@ -6,5 +6,9 @@ TARGET     : kafka16.dws
 EXEC  : 'kafka' ⎕ns ''
 APL   : aplsource/kafka/*.aplf, Target=#.kafka
 APL   : aplsource/*.aplc, Target=#
-APL   : aplsource/*.aplf, Target=#
+APL   : aplsource/Init.aplf, Target=#
+APL   : aplsource/Sample.aplf, Target=#
+APL   : aplsource/Sample2.aplf, Target=#
+APL   : aplsource/Sample3.aplf, Target=#
+APL   : aplsource/Sample4.aplf, Target=#
 
