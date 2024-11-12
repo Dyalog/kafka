@@ -1,0 +1,10 @@
+﻿DyalogBuild: 0.1
+ID         : KafkaInterface, Version=1.0
+Description: Interface to connect to the librdkafka api
+Defaults   : ⎕IO←⎕ML←1
+TARGET     : kafka16.dws
+EXEC  : 'kafka' ⎕ns ''
+APL   : aplsource/kafka/*.aplf, Target=#.kafka
+APL   : aplsource/*.aplc, Target=#
+APL   : aplsource/*.aplf, Target=#
+
