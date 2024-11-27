@@ -44,3 +44,10 @@ Initialise the library, passing as the argument the path where the `kafka.[so|a|
 ```apl
 Init 'path/to/dir/housing/shared/lib' ⍝ to load the dll
 ```
+
+For further instructions, see the file [SPEC.md](SPEC.md), and sample code examples:
+
+1. [Sample 1](aplsource/Sample.aplf)
+2. [Sample 2](aplsource/Sample2.aplf)
+3. [Sample 3](aplsource/Sample3.aplf)
+4. [Sample 4](aplsource/Sample4.aplf)
