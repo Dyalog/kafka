@@ -1,6 +1,8 @@
 # Dyalog-Kafka 
 
-The aim of the Dyalog-Kafka project is to provide a binding to part of the [Confluent librdkafka](https://github.com/confluentinc/librdkafka) library such that we can access Kafka from Dyalog APL. 
+The aim of the Dyalog-Kafka project is to provide a binding to part of the [Confluent librdkafka](https://github.com/confluentinc/librdkafka) library such that we can access [Kafka](https://kafka.apache.org/) from Dyalog APL. 
+
+> **Note** KAFKA is a [registered trademark](https://kafka.apache.org/trademark) of [The Apache Software Foundation](https://www.apache.org/) and has been licensed for use by [Dyalog Ltd](https://www.dyalog.com/). Dyalog Ltd has no affiliation with and is not endorsed by The Apache Software Foundation.
 
 ## Build and installation
 
