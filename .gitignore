@@ -6,3 +6,6 @@
 /kafka/*.vcxproj.filters
 /kafka/*.vcxproj.user
 /packages
+/distribution
+/Win32
+
