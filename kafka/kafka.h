@@ -1,5 +1,5 @@
 #pragma once
-#if defined(FORMAC) || defined(FORLINUX)
+#if defined(FORmac) || defined(FORlinux)
 #define LIBRARY_API __attribute__((visibility("default")))
 #endif
 

@@ -1,10 +1,13 @@
 KAFKA_MODS := \
 	kafka \
 
+ifeq ($(ARCH),x86_64)
+ARCH=x64
+endif
 
-DIST=distribution/$(PLATFORM)/$(BITS)
+DIST=distribution/$(PLATFORM)/$(ARCH)/$(BITS)
 
-BIN=$(PLATFORM)bin
+BIN=$(PLATFORM)$(ARCH)bin
 
 
 ifeq ($(PLATFORM),WIN)
@@ -32,20 +35,20 @@ endif
 
 KAFKA_OBJS:= $(KAFKA_MODS:%=$(BIN)/%.o)
 
-all: $(BIN)/kafka.$(EXT) $(BIN)/librdkafka.$(EXT)
+all: $(DIST)/kafka.$(EXT) $(DIST)/librdkafka.$(EXT)
 
 
 $(BIN)/kafka.$(EXT): $(KAFKA_OBJS) $(KAFKALIBS) 
-	$(CC) -shared -o $@  $(KAFKA_OBJS)  $(KAFKALIBS)
+	$(CPP) -shared -o $@   $(KAFKA_OBJS)  $(KAFKALIBS)
 
 $(BIN)/%.o: kafka/%.cpp $(BIN) $(KAFKAINC)
-	$(CC) -c -o $@  -DFOR$(PLATFORM) -I $(KAFKAINC)  -fpic $<
+	$(CPP) -c -o $@   -DFOR$(PLATFORM) -I $(KAFKAINC)  -fpic $<
 
 $(BIN):
 	mkdir -p $@
 
 $(DIST):
- 	mkdir -p $@
+	mkdir -p $@
 
 $(DIST)/kafka.$(EXT): $(DIST) $(BIN)/kafka.$(EXT)  
 	cp  $(BIN)/kafka.$(EXT) $@

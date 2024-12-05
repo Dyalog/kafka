@@ -16,9 +16,9 @@ $0   64
 	exit 1
 }
 
-[ 2 -ne $# ] && Usage
+[ 1 -ne $# ] && Usage
 
-BITS=$2
+BITS=$1
 
 case $BITS in
 	32)

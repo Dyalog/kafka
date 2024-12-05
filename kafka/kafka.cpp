@@ -2,7 +2,7 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files
 #include <windows.h>
-#elif defined(FORMAC) ||defined(FORAIX) || defined(FORLINUX)
+#elif defined(FORmac) ||defined(FORaix) || defined(FORlinux)
 #include <unistd.h>
 #else
 #endif
@@ -12,7 +12,7 @@
 #include "rdkafka.h"
 #include "kafka.h"
 
-#if defined(FORMAC) || defined(FORLINUX)
+#if defined(FORmac) || defined(FORlinux)
 int strncpy_s(char* dst, size_t ds, const char* src, size_t ss)
 {
 	strncpy(dst, src, ss);
