@@ -16,10 +16,10 @@ pipeline {
               echo "====== macOS: starting build"
               export BITS=64
               
-              PLATFORM=mac ARCH=x64 ./mk_kafka.sh $BITS
+              PLATFORM=mac  ./mk_kafka.sh $BITS
               echo "====== macOS: finished build"
             '''
-            stash name: 'dist-mac', includes: 'distribution/mac/'
+            stash name: 'dist-mac', includes: 'distribution/mac/x64'
           }
         }
         stage('Build on Mac Arm') {
@@ -32,10 +32,10 @@ pipeline {
               echo "====== macOS: starting build"
               export BITS=64 
 
-              PLATFORM=mac ARCH=arm64 ./mk_kafka.sh $BITS
+              PLATFORM=mac  ./mk_kafka.sh $BITS
               echo "====== macOS: finished build"
             '''
-            stash name: 'dist-mac_arm', includes: 'distribution/mac_arm/'
+            stash name: 'dist-mac_arm', includes: 'distribution/mac/arm64'
           }
         }
         stage('Build on Linux') {
@@ -52,10 +52,10 @@ pipeline {
               echo "====== Linux: starting build"
               export BITS=64 
 
-              PLATFORM=linux ARCH=x64 ./mk_kafka.sh $BITS              
+              PLATFORM=linux ./mk_kafka.sh $BITS              
               echo "====== Linux: finished build"
             '''
-            stash name: 'dist-linux', includes: 'distribution/linux/'
+            stash name: 'dist-linux', includes: 'distribution/linux/x64'
           }
         }
         stage('Build on Windows') {
@@ -63,7 +63,7 @@ pipeline {
             label 'win && build && 20.0'
           }
           steps {
-            bat 'sqaplBuild.bat'
+            bat 'kafkaBuild.bat'
             stash name: 'dist-win', includes: 'distribution/win/'
           }
         }
