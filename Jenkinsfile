@@ -19,7 +19,7 @@ pipeline {
               PLATFORM=mac  ./mk_kafka.sh $BITS
               echo "====== macOS: finished build"
             '''
-            stash name: 'dist-mac', includes: 'distribution/mac/x64'
+            stash name: 'dist-mac', includes: 'distribution/mac/x64/'
           }
         }
         stage('Build on Mac Arm') {
@@ -35,7 +35,7 @@ pipeline {
               PLATFORM=mac  ./mk_kafka.sh $BITS
               echo "====== macOS: finished build"
             '''
-            stash name: 'dist-mac_arm', includes: 'distribution/mac/arm64'
+            stash name: 'dist-mac_arm', includes: 'distribution/mac/arm64/'
           }
         }
         stage('Build on Linux') {
