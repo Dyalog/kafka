@@ -55,7 +55,7 @@ pipeline {
               PLATFORM=linux ./mk_kafka.sh $BITS              
               echo "====== Linux: finished build"
             '''
-            stash name: 'dist-linux', includes: 'distribution/linux/x64'
+            stash name: 'dist-linux', includes: 'distribution/linux/x64/'
           }
         }
         stage('Build on Windows') {
