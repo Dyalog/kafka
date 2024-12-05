@@ -41,13 +41,13 @@
 :BUILD
 
 	set WORKSPACE=%CD%
-	dotnet new classlib  --name klyp -o %TEMP%/kafka --force
-	dotnet add %TEMP%/kafka package librdkafka.redist --version 2.5.0
-	dotnet publish %TEMP%/kafka
+	dotnet new classlib  --name klyp -o %TEMP%\kafka --force
+	dotnet add %TEMP%\kafka package librdkafka.redist --version 2.5.0
+	dotnet publish %TEMP%\kafka
 	
-	xcopy -x%USERPROFILE%\.nuget\packages\librdkafka.redist\ .\packages\librdkafka.redist\	/S /E /Y
+	xcopy %USERPROFILE%\.nuget\packages\librdkafka.redist\ .\packages\librdkafka.redist\	/S /E /Y
 
-	rmdir /s %TEMP%/kafka
+	rmdir /s %TEMP%\kafka
 
 	for /f "skip=1" %%d in ('wmic os get localdatetime') do if not defined mydate set mydate=%%d
 	set BDATE=%mydate:~0,8%-%mydate:~8,4%
