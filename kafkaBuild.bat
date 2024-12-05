@@ -41,7 +41,13 @@
 :BUILD
 
 	set WORKSPACE=%CD%
-
+	mkdir tmp
+	cd tmp
+	dotnet new classlib  --name kafka -o . --force
+	dotnet add package librdkafka.redist --version 2.5.0
+	dotnet publish
+	cd ..
+	
 	for /f "skip=1" %%d in ('wmic os get localdatetime') do if not defined mydate set mydate=%%d
 	set BDATE=%mydate:~0,8%-%mydate:~8,4%
 
