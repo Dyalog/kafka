@@ -3,14 +3,14 @@
 	for /f "tokens=1,2 delims=_" %%a in ("%JOB_NAME%") do set tsk=%%a&set vers=%%b
 
 	set TASK=%tsk%
-	set VERSION=%vers%
+	set BRANCH=%vers%
 
 	GOTO VS
 
 
 :VS
 
-	IF "%VERSION%" == "Trunk" (
+	IF "%BRANCH%" == "Trunk" (
 		GOTO USE_VS17
 	)
 	IF EXIST "c:\Program Files (x86)\Microsoft Visual Studio 8" GOTO USE_VS8
