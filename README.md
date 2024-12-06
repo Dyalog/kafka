@@ -16,7 +16,11 @@ Copy all the dlls from the OutDir (`kafka\x64\Debug` for 64 bit debug version) t
 
 ### Linux
 
-TODO
+To build on linux for 64 bit 
+```
+PLATFORM=linux ./mk_kafka.sh 64
+```
+The output files are in distribution/linux/x64
 
 ### AIX
 
@@ -31,8 +35,15 @@ brew install librdkafka
 Build the wrapper:
 ```
 cd <path>/kafka
-c++ -shared -fpic -oMACbin/kafka.dylib -DFORMAC  kafka/kafka.cpp -lrdkafka -L/opt/homebrew/opt/librdkafka/lib -I/opt/homebrew/opt/librdkafka/include/librdkafka
+c++ -shared -fpic -oMACbin/kafka.dylib -DFORmac  kafka/kafka.cpp -lrdkafka -L/opt/homebrew/opt/librdkafka/lib -I/opt/homebrew/opt/librdkafka/include/librdkafka
 ```
+
+or like linux but this requires dotnet to be installed to get the librdkafka package
+
+```
+PLATFORM=mac ./mk_kafka.sh 64
+```
+
 
 ## Initialising
 
