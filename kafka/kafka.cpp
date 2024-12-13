@@ -12,7 +12,7 @@
 #include "rdkafka.h"
 #include "kafka.h"
 
-#if defined(FORmac) || defined(FORlinux)
+#if defined(FORmac) || defined(FORlinux) || defined(FORaix)
 int strncpy_s(char* dst, size_t ds, const char* src, size_t ss)
 {
 	strncpy(dst, src, ss);

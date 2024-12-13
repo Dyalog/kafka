@@ -1,5 +1,5 @@
 #pragma once
-#if defined(FORmac) || defined(FORlinux)
+#if defined(FORmac) || defined(FORlinux) || defined(FORaix)
 #define LIBRARY_API __attribute__((visibility("default")))
 #endif
 
