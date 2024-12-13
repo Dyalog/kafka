@@ -43,7 +43,7 @@ case $PLATFORM in
 		EXT=dylib
 		;;
 	aix)
-		ARCH=`uname -p`
+		ARCH=
 		MAKE="gmake"
 		EXT=so
 		;;
