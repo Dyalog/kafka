@@ -38,6 +38,22 @@ pipeline {
             stash name: 'dist-mac_arm', includes: 'distribution/mac/arm64/'
           }
         }
+        stage('Build on AIX') {
+          agent {
+            label 'p9-7217'
+          }
+          steps {
+            sh '''#!/bin/bash
+              set -e
+              echo "====== AIX: starting build"
+              export BITS=64 
+
+              PLATFORM=aix  ./mk_kafka.sh $BITS
+              echo "====== AIX: finished build"
+            '''
+            stash name: 'dist-aix', includes: 'distribution/aix/'
+          }
+        }
         stage('Build on Linux') {
           agent {
             docker {
@@ -82,6 +98,7 @@ pipeline {
         unstash 'dist-mac'
         unstash 'dist-mac_arm'
         unstash 'dist-linux'
+        unstash 'dist-aix'
         sh './publish.sh'
       }
     }
