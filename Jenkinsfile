@@ -47,6 +47,7 @@ pipeline {
               set -e
               echo "====== AIX: starting build"
               export BITS=64 
+              export PATH=/opt/freeware/bin:$PATH
 
               PLATFORM=aix  ./mk_kafka.sh $BITS
               echo "====== AIX: finished build"
