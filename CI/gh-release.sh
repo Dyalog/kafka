@@ -19,8 +19,7 @@ esac
 TMP_JSON=/tmp/gh-publish.$$.json
 GH_RELEASES=/tmp/gh-releases.$$.json
 BASE_VERSION=`cat base-version.txt`
-VERSION_AB="${BASE_VERSION%.*}"  # "%%.0" strips trailing ".0" - JR - use %.* incase the last digit isn't 0
-VERSION="${VERSION_AB}.`git rev-list HEAD --count`"
+VERSION="${BASE_VERSION}.`git rev-list HEAD --count`"
 
 if ! [ "$GHTOKEN" ]; then
     echo 'Please put your GitHub API Token in an environment variable named GHTOKEN'
@@ -48,7 +47,7 @@ if which jq >/dev/null 2>&1; then
         GH_VERSION_ND=$(cat $GH_RELEASES | jq ".[$C].name" | sed 's/"//g;s/^v//;s/\.//g')
         GH_VERSION_AB=${GH_VERSION%.*}
 
-        if [ "${GH_VERSION_AB}" = "${VERSION_AB}" ]; then
+        if [ "${GH_VERSION_AB}" = "${BASE_VERSION}" ]; then
             if [ "$DRAFT" = "true" ]; then
                 echo -e -n "*** $(cat $GH_RELEASES | jq ".[$C].name" | sed 's/"//g') with id: $(cat $GH_RELEASES | jq  ".[$C].id") is a draft - Deleting.\n"
                 curl -X "DELETE" -H "Authorization: token $GHTOKEN" https://api.github.com/repos/Dyalog/kafka/releases/${ID}
@@ -72,16 +71,16 @@ fi
 echo "SHA: ${COMMIT_SHA}"
 
 if [ $GH_VERSION_ND_LAST = 0 ]; then
-    echo "No releases of $VERSION_AB found, not populating changelog"
-    JSON_BODY=$(echo -e "Pre-Release of Dyalog-Kafka $VERSION_AB\n\nWARNING: This is a pre-release version of Dyalog-Kafka $VERSION_AB: it is possible that functionality may be added, removed or altered; we do not recommend using pre-release versions of Dyalog Kafka in production environment." | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+    echo "No releases of $BASETVERSION found, not populating changelog"
+    JSON_BODY=$(echo -e "Pre-Release of Dyalog-Kafka $BASE_VERSION\n\nWARNING: This is a pre-release version of Dyalog-Kafka $BASE_VERSION: it is possible that functionality may be added, removed or altered; we do not recommend using pre-release versions of Dyalog Kafka in production environment." | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
     PRERELEASE=true
 else
     echo using log from $COMMIT_SHA from $GH_VERSION_ND_LAST
     echo "Is Prerelease: ${PRERELEASE}"
     if [ "${PRERELEASE}" = "false" ]; then
-        MSG_TEXT="Release Dyalog-Kafka ${VERSION_AB}\n\n"
+        MSG_TEXT="Release Dyalog-Kafka ${BASE_VERSION}\n\n"
     else
-        MSG_TEXT="Pre-Release of Dyalog-Kafka $VERSION_AB\n\nWARNING: This is a pre-release version of Dyalog-Kafka $VERSION_AB: it is possible that functionality may be added, removed or altered; we do not recommend using pre-release versions of Dyalog-Kafka in production environments.\n\n"
+        MSG_TEXT="Pre-Release of Dyalog-Kafka $BASE_VERSION\n\nWARNING: This is a pre-release version of Dyalog-Kafka $BASE_VERSION: it is possible that functionality may be added, removed or altered; we do not recommend using pre-release versions of Dyalog-Kafka in production environments.\n\n"
     fi
     JSON_BODY=$( ( echo -e "${MSG_TEXT}Changelog:"; git log --format='%s' ${COMMIT_SHA}.. ) | grep -v -i todo | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 fi
