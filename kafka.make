@@ -68,7 +68,9 @@ $(DIST)/kafka.$(EXT): $(DIST) $(BIN)/kafka.$(EXT)
 
 $(DIST)/librdkafka.$(EXT): $(KAFKALIBS)
 	cp $< $@
-	cp $(KAFKARDLICENSE) $(DIST)/LICENSES.librdkafka
+
+$(DIST)/LICENSES.librdkafka: $(KAFKARDLICENSE)
+	cp $< $@
 
 
 $(KAFKAINC): $(KAFKALIBS)
