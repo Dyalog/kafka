@@ -12,7 +12,7 @@ mountpoint /devt; echo "Devt is mounted: good"
 BASE_VERSION=`cat base-version.txt`
 
 VERSION="${BASE_VERSION%%.0}.`git rev-list HEAD --count`"  # "%%.0" strips trailing ".0"
-if [ "${JOB_NAME:0:6}" = "GitHub" ]; then
+if [ "${JOB_NAME:0:6}" = "Github" ]; then
   JOB_NAME=${JOB_NAME#*/}
 fi
 

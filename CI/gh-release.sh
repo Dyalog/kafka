@@ -5,7 +5,7 @@ GIT_BRANCH=${JOB_NAME#*/*/}
 GIT_COMMIT=$(git rev-parse HEAD)
 
 case $GIT_BRANCH in
-    main|kafka[0-9]\.[0-9]|test)
+    main|kafka[0-9]\.[0-9]|PR*)
         echo "creating ${GIT_BRANCH} release"
     ;;
     *)  
