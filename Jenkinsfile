@@ -100,7 +100,8 @@ pipeline {
         unstash 'dist-mac_arm'
         unstash 'dist-linux'
         unstash 'dist-aix'
-        sh './publish.sh'
+        sh './CI/publish.sh'
+        sh './CI/gh-release.sh'
       }
     }
   }
