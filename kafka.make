@@ -31,11 +31,13 @@ else  ifeq ($(PLATFORM),aix)
  KAFKALIBS=$(KAFKA)/librdkafka/src/librdkafka.a
  EXT=so
  KAFKABINSRC=build
+ LICENSE=$(KAFKA)/librdkafka/LICENSES.txt
 else  ifeq ($(PLATFORM),mac) 
  CC=cc
  CPP=c++
  KAFKAINC=~/.nuget/packages/librdkafka.redist/2.5.0/build/native/include/librdkafka
  KAFKALIBS=~/.nuget/packages/librdkafka.redist/2.5.0/runtimes/osx-$(ARCH)/native/librdkafka.dylib
+ LICENSE=~/.nuget/packages/librdkafka.redist/2.5.0/LICENSES.txt
  EXT=dylib
  KAFKABINSRC=nuget
 else
@@ -66,6 +68,8 @@ $(DIST)/kafka.$(EXT): $(DIST) $(BIN)/kafka.$(EXT)
 
 $(DIST)/librdkafka.$(EXT) : $(KAFKALIBS)
 	cp $< $@
+	cp $(LICENSE) $(DIST)/LICENSE.librdkafka
+
 
 $(KAFKAINC): $(KAFKALIBS)
 
