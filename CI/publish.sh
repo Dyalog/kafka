@@ -10,10 +10,9 @@ mountpoint /devt; echo "Devt is mounted: good"
 [ -d distribution ] || { echo "Error: distribution directory not found."; exit 1; }
 
 BASE_VERSION=`cat base-version.txt`
-PACKAGE_NAME=kafka
 
 VERSION="${BASE_VERSION%%.0}.`git rev-list HEAD --count`"  # "%%.0" strips trailing ".0"
-if [ "${JOB_NAME:0:6}" = "Github" ]; then
+if [ "${JOB_NAME:0:6}" = "GitHub" ]; then
   JOB_NAME=${JOB_NAME#*/}
 fi
 
@@ -33,8 +32,8 @@ for dir in /devt/builds/$JOB_NAME/latest/*; do
 done
 
 # Tidy up old builds
-r=/devt/builds/${JOB_NAME#*/}
-ls "$r" | grep -v "latest" | sort -n | head -n-10 | while read x; do
-  echo "deleting $r/$x"
-  rm -rf "$r/$x" || true # Continue even if deletion fails
-done
+# r=/devt/builds/${JOB_NAME#*/}
+# ls "$r" | grep -v "latest" | sort -n | head -n-10 | while read x; do
+#   echo "deleting $r/$x"
+#   rm -rf "$r/$x" || true # Continue even if deletion fails
+# done
