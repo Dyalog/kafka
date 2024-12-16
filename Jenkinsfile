@@ -87,13 +87,16 @@ pipeline {
       }
     }
     stage('Publish') {
-          agent {
-            docker {
-              image 'dyalogci/ubuntu:20.04-build'
-              registryCredentialsId '0435817a-5f0f-47e1-9dcc-800d85e5c335'
-              args '-v /devt:/devt'
-            }
-          }
+      agent {
+        docker {
+          image 'dyalogci/ubuntu:20.04-build'
+          registryCredentialsId '0435817a-5f0f-47e1-9dcc-800d85e5c335'
+          args '-v /devt:/devt'
+        }
+      }
+      environment {
+        GHTOKEN = credentials('250bdc45-ee69-451a-8783-30701df16935')
+      }
       steps {
         unstash 'dist-win'
         unstash 'dist-mac'
