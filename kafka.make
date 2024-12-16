@@ -66,7 +66,7 @@ $(DIST):
 $(DIST)/kafka.$(EXT): $(DIST) $(BIN)/kafka.$(EXT)  
 	cp  $(BIN)/kafka.$(EXT) $@
 
-$(DIST)/librdkafka.$(EXT) : $(KAFKALIBS)
+$(DIST)/librdkafka.$(EXT): $(KAFKALIBS)
 	cp $< $@
 	cp $(KAFKARDLICENSE) $(DIST)/LICENSES.librdkafka
 
@@ -83,7 +83,7 @@ build: $(PWD)/librdkafka
 	cd $(KAFKA)/librdkafka && ./configure --prefix=/home/bhc/kafkalib  --install-deps --cc=ibm-clang_r --cxx=ibm-clang++_r --CFLAGS="-D__aix" --mbits=64 --ARFLAGS=-X64 --LDFLAGS=" -lssl -lcrypto"
 	cd $(KAFKA)/librdkafka && make libs
 
-nuget: $(KAFKALIBS)
+nuget: 
 	cd $(BIN) && dotnet new classlib  --name kafka -o . --force
 	cd $(BIN) && dotnet add package librdkafka.redist --version 2.5.0
 	cd $(BIN) && dotnet publish
