@@ -119,4 +119,4 @@ for F in /devt/builds/kafka/${GIT_BRANCH}/latest/*.zip; do
   fi
 done
 
-rm -f $TMP_RESPONSE $TMP_JSON
+#rm -f $TMP_RESPONSE $TMP_JSON
