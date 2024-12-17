@@ -68,6 +68,7 @@ $(DIST)/kafka.$(EXT): $(DIST) $(BIN)/kafka.$(EXT)
 
 $(DIST)/librdkafka.$(EXT): $(KAFKALIBS)
 	cp $< $@
+	cp  $(KAFKARDLICENSE) $(DIST)/LICENSES.librdkafka
 
 $(DIST)/LICENSES.librdkafka: $(KAFKARDLICENSE)
 	cp $< $@
@@ -76,19 +77,22 @@ $(DIST)/LICENSES.librdkafka: $(KAFKARDLICENSE)
 $(KAFKAINC): $(KAFKALIBS)
 
 
-$(KAFKALIBS):  $(KAFKABINSRC)
+$(KAFKALIBS):  $(KAFKA)/$(KAFKABINSRC).pseudo
 
-$(PWD)/librdkafka:
-	git clone -b dyalog-build git@github.com:Dyalog/librdkafka librdkafka
+$(KAFKA)/librdkafka:
+	git clone -b dyalog-build git@github.com:Dyalog/librdkafka $(KAFKA)/librdkafka
 
-build: $(PWD)/librdkafka
+
+$(KAFKA)/build.pseudo: $(KAFKA)/librdkafka
 	cd $(KAFKA)/librdkafka && ./configure --prefix=/home/bhc/kafkalib  --install-deps --cc=ibm-clang_r --cxx=ibm-clang++_r --CFLAGS="-D__aix" --mbits=64 --ARFLAGS=-X64 --LDFLAGS=" -lssl -lcrypto"
 	cd $(KAFKA)/librdkafka && make libs
+	touch $(KAFKA)/build.pseudo
 
-nuget: 
+$(KAFKA)/nuget.pseudo: 
 	cd $(BIN) && dotnet new classlib  --name kafka -o . --force
 	cd $(BIN) && dotnet add package librdkafka.redist --version 2.5.0
 	cd $(BIN) && dotnet publish
+	touch $(KAFKA)/nuget.pseudo
 
 $(BIN)/librdkafka.$(EXT) : $(KAFKALIBS)
 	cp $< $@ 
