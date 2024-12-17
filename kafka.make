@@ -102,4 +102,4 @@ clean:
 	rm -rf $(BIN)
 	rm -rf $(DIST)
 	rm -rf $(KAFKA)/librdkafka
-	rm $(KAFKA)/build.pseudo $(KAFKA)/nuget.pseudo
+	rm $(KAFKA)/*.pseudo 
