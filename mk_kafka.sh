@@ -53,7 +53,9 @@ case $PLATFORM in
 		;;
 esac
 
-
+if [ "$PLATFORM" = "linux" ]; then
+ BITS=$BITS PLATFORM=$PLATFORM ARCH=$ARCH  $MAKE -f kafka.make clean
+fi
 
 
  BITS=$BITS PLATFORM=$PLATFORM ARCH=$ARCH  $MAKE -f kafka.make
