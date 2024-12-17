@@ -19,6 +19,7 @@ else  ifeq ($(PLATFORM),linux)
  CPP=g++
  KAFKAINC=~/.nuget/packages/librdkafka.redist/2.5.0/build/native/include/librdkafka
  KAFKALIBS=~/.nuget/packages/librdkafka.redist/2.5.0/runtimes/linux-$(ARCH)/native/librdkafka.so
+ KAFKARDLICENSE=~/.nuget/packages/librdkafka.redist/2.5.0/LICENSES.txt
  EXT=so
  KAFKABINSRC=nuget
 else  ifeq ($(PLATFORM),aix) 
@@ -48,7 +49,7 @@ endif
 
 KAFKA_OBJS:= $(KAFKA_MODS:%=$(BIN)/%.o)
 
-all: $(DIST)/kafka.$(EXT) $(DIST)/librdkafka.$(EXT)
+all: $(DIST)/kafka.$(EXT) $(DIST)/librdkafka.$(EXT) $(DIST)/LICENSES.librdkafka
 
 
 $(BIN)/kafka.$(EXT): $(KAFKA_OBJS) $(KAFKALIBS) 
