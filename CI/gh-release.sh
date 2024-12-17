@@ -5,7 +5,7 @@ GIT_BRANCH=${JOB_NAME#*/*/}
 GIT_COMMIT=$(git rev-parse HEAD)
 
 case $GIT_BRANCH in
-    main|kafka[0-9]\.[0-9]|PR*)
+    main|kafka[0-9]\.[0-9])
         echo "creating ${GIT_BRANCH} release"
     ;;
     *)  
@@ -68,8 +68,6 @@ else
     echo jq not found, not removing draft releases
 fi
 
-echo "SHA: ${COMMIT_SHA}"
-
 if [ $GH_VERSION_ND_LAST = 0 ]; then
     echo "No releases of $BASETVERSION found, not populating changelog"
     JSON_BODY=$(echo -e "Pre-Release of Dyalog-Kafka $BASE_VERSION\n\nWARNING: This is a pre-release version of Dyalog-Kafka $BASE_VERSION: it is possible that functionality may be added, removed or altered; we do not recommend using pre-release versions of Dyalog Kafka in production environment." | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
@@ -120,4 +118,4 @@ for F in /devt/builds/kafka/${GIT_BRANCH}/latest/*.zip; do
   fi
 done
 
-#rm -f $TMP_RESPONSE $TMP_JSON
+rm -f $TMP_RESPONSE $TMP_JSON
