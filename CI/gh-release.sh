@@ -102,6 +102,8 @@ REPO=Dyalog/kafka # ideally this should be parsed from "git ls-remote --get-url 
 TMP_RESPONSE=/tmp/gh-response.$$.json
 curl -o $TMP_RESPONSE --data @$TMP_JSON -H "Authorization: token $GHTOKEN" -i https://api.github.com/repos/$REPO/releases
 
+cat "$TMP_RESPONSE"
+
 RELEASE_ID=`grep '"id"' $TMP_RESPONSE | head -1 | sed 's/.*: //;s/,//'`
 
 echo "created release with id: $RELEASE_ID"
