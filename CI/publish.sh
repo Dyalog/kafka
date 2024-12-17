@@ -25,11 +25,26 @@ ln -s $BUILD_NUMBER /devt/builds/$JOB_NAME/latest
 for dir in /devt/builds/$JOB_NAME/latest/*; do
   if [ -d "$dir" ]; then
     dir_name=$(basename "$dir")
-    zip_file="/devt/builds/$JOB_NAME/$BUILD_NUMBER/dyalog-kafka.${dir_name}.${VERSION}.zip"
-    echo "Creating zip file: $zip_file"
-    pushd /devt/builds/$JOB_NAME/latest >/dev/null
-    zip -r "$zip_file" "$dir_name" || true  # Continue even if zip fails
-    popd >/dev/null
+    
+    if [ "$dir_name" = "mac" ]; then
+      # Special handling for mac directory - create separate zips for each architecture
+      pushd /devt/builds/$JOB_NAME/latest/mac >/dev/null
+      for arch in arm64 x64; do
+        if [ -d "$arch" ]; then
+          zip_file="/devt/builds/$JOB_NAME/$BUILD_NUMBER/dyalog-kafka.mac-${arch}-${VERSION}.zip"
+          echo "Creating zip file: $zip_file"
+          zip -r "$zip_file" "$arch" || true
+        fi
+      done
+      popd >/dev/null
+    else
+      zip_file="/devt/builds/$JOB_NAME/$BUILD_NUMBER/dyalog-kafka.${dir_name}.${VERSION}.zip"
+      echo "Creating zip file: $zip_file"
+      
+      pushd /devt/builds/$JOB_NAME/latest >/dev/null
+      zip -r "$zip_file" "$dir_name" || true
+      popd >/dev/null
+    fi
   fi
 done
 
