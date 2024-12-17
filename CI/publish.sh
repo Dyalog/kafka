@@ -27,11 +27,13 @@ for dir in /devt/builds/$JOB_NAME/latest/*; do
     dir_name=$(basename "$dir")
     zip_file="/devt/builds/$JOB_NAME/$BUILD_NUMBER/dyalog-kafka.${dir_name}.${VERSION}.zip"
     echo "Creating zip file: $zip_file"
-    zip -r "$zip_file" "$dir" || true  # Continue even if zip fails
+    pushd /devt/builds/$JOB_NAME/latest >/dev/null
+    zip -r "$zip_file" "$dir_name" || true  # Continue even if zip fails
+    popd >/dev/null
   fi
 done
 
-# Tidy up old builds
+# Tidy up old builds NOTE THIS CAN'T BE IN THIS SCRIPT
 # r=/devt/builds/${JOB_NAME#*/}
 # ls "$r" | grep -v "latest" | sort -n | head -n-10 | while read x; do
 #   echo "deleting $r/$x"
