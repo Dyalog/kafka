@@ -50,10 +50,7 @@ done
 
 # Tidy up old builds
 r=/devt/builds/${JOB_NAME}
-
-echo $r
-
 ls "$r" | grep -v "latest" | sort -n | head -n-10 | while read x; do
   echo "deleting $r/$x"
-#  rm -rf "$r/$x" || true # Continue even if deletion fails
+  rm -rf "$r/$x" || true # Continue even if deletion fails
 done
