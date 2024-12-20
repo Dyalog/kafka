@@ -1,12 +1,12 @@
- r←setconf(inst opt val)
+ r←setconf(inst opt val);err;msg;len
 ⍝ set an option for a kafka instance
 ⍝ inst the kafka instance could be either Producer or Consumer
 ⍝ opt  option
 ⍝ val   value
 
- r←SetKafkaConf inst opt val 512 512
- :If 0≠⊃r
-     r←r
+ (err msg len)←3↑SetKafkaConf inst opt val 512 512
+ :If 0≠err
+     r←err  (len↑msg)
  :Else
      r←0 ''
  :EndIf

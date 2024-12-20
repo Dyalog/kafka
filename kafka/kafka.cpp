@@ -70,7 +70,7 @@ static void on_delivery(rd_kafka_t* rk, const rd_kafka_message_t* rkmessage, voi
 LIBRARY_API int Version(char* version, int len)
 {
 	const char* kafkaver = rd_kafka_version_str();
-	strncpy_s(version, len, kafkaver, strlen(kafkaver));
+	strncpy_s(version, len, kafkaver, 1+strlen(kafkaver));
 
 	return rd_kafka_version();
 }
@@ -112,23 +112,34 @@ LIBRARY_API int UninitConsumer(void* cons)
 	return 0;
 }
 
-LIBRARY_API int SetKafkaConf(void* kafka, char* key, char* val, char* errtxt, int len)
+LIBRARY_API int SetKafkaConf(void* kafka, char* key, char* val, char* errtxt, int *plen)
 {
+	rd_kafka_conf_res_t res;
+	size_t len = *plen;
+	*errtxt = 0;
 	kafka_struct* kf = (kafka_struct*)kafka;
 	if (kf->conf == NULL) {
 		rd_kafka_conf_t* config = rd_kafka_conf_new();
 		kf->conf = config;
 	}
 
-	rd_kafka_conf_set((rd_kafka_conf_t*)kf->conf, key, val, errtxt, len);
-	return 0;
+	res=rd_kafka_conf_set((rd_kafka_conf_t*)kf->conf, key, val, errtxt, len);
+	if (res == RD_KAFKA_CONF_OK)
+		*plen = 0;
+	else
+		*plen = (int)strlen(errtxt);
+
+	return (int) res;
 }
 
 
 
-LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen, char* key,uint32_t keylen,  int32_t partition, uint64_t* msgid, char* errtxt, int len)
+LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen, char* key,uint32_t keylen,  int32_t partition, uint64_t* msgid, char* errtxt, int *plen)
 {
 	int kerr = 0;
+	size_t len = *plen;
+	*errtxt = 0;
+
 	kafka_struct* pr = (kafka_struct*)prod;
 
 	if (pr->rk == NULL) {
@@ -143,6 +154,10 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 
 		rd_kafka_t* rk = rd_kafka_new(RD_KAFKA_PRODUCER, pr->conf, errtxt, len);
 		pr->rk = rk;
+		if (NULL==rk)
+			*plen = 0;
+		else
+			*plen =(int) strlen(errtxt);
 
 		//ok?
 		pr->conf = NULL;
@@ -193,29 +208,40 @@ LIBRARY_API int SetTopicPartitionList(void* subscr, char* topic)
 	return 0;
 }
 
-LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt, int len)
+LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt, int *plen)
 {
+	rd_kafka_resp_err_t res;
+	size_t len = *plen;
+	*errtxt = 0;
+
 	kafka_struct* kf = (kafka_struct*)kafka;
 	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
 
 	rd_kafka_t* rk = rd_kafka_new(RD_KAFKA_CONSUMER, kf->conf, errtxt, len);
 	kf->rk = rk;
-	
-	rd_kafka_resp_err_t err_t = rd_kafka_subscribe(kf->rk, subscription);
+	if (NULL!=rk)
+		*plen = 0;
+	else
+		*plen = (int)strlen(errtxt);
+
+	res = rd_kafka_subscribe(kf->rk, subscription);
 	//rd_kafka_resp_err_t err_p = rd_kafka_assign(kf->rk, subscription);
 
 	rd_kafka_topic_partition_list_destroy(subscription);
 	
 	rd_kafka_poll_set_consumer(kf->rk);
 	kf->conf = NULL;
-	return 0;
+	return (int) res;
 }
 
 
-LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payload,uint32_t *paylen,char* key, uint32_t *keylen,int32_t *partition,  char* errtxt, int len)
+LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payload,uint32_t *paylen,char* key, uint32_t *keylen,int32_t *partition,  char* errtxt, int *plen)
 {
 	kafka_struct* co = (kafka_struct*)cons;
 	rd_kafka_message_t* rkmessage;
+	size_t len = *plen;
+	*errtxt = 0;
+
 	if (NULL != co->msg)
 	{
 		rkmessage = co->msg;
@@ -230,6 +256,7 @@ LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payloa
 		if ( 0 != rkmessage->err)
 		{
 			strncpy_s(errtxt, len, (char*)rkmessage->payload, rkmessage->len);
+			*plen=(int)rkmessage->len;
 			return rkmessage->err;
 		}
 
@@ -241,26 +268,28 @@ LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payloa
 			*topiclen = (uint32_t)tlen; 
 			*paylen = (uint32_t)rkmessage->len;
 			*keylen = (uint32_t)rkmessage->key_len;
-			strncpy_s(errtxt, len, "message too long", 16);
+			strncpy_s(errtxt, len, "message too long", 17);
 			return 2;
 		}
 
-
-		strncpy_s(topic, *topiclen, rd_kafka_topic_name(rkmessage->rkt), tlen);
-		strncpy_s(payload, *paylen, (char*)rkmessage->payload, rkmessage->len);
-		strncpy_s(key, *keylen,(char*) rkmessage->key, rkmessage->key_len);
+		memcpy(topic, rd_kafka_topic_name(rkmessage->rkt), tlen);
+		memcpy(payload, (char*)rkmessage->payload, rkmessage->len);
+		memcpy(key, (char*)rkmessage->key, rkmessage->key_len);
+//		strncpy_s(topic, *topiclen, rd_kafka_topic_name(rkmessage->rkt), tlen);
+//		strncpy_s(payload, *paylen, (char*)rkmessage->payload, rkmessage->len);
+//		strncpy_s(key, *keylen,(char*) rkmessage->key, rkmessage->key_len);
 		*partition = rkmessage->partition;
 
 		*topiclen = (uint32_t)tlen;
 		*paylen = (uint32_t)rkmessage->len;
 		*keylen = (uint32_t)rkmessage->key_len;
 
-		strncpy_s(errtxt, len, "", strlen(""));
+		strncpy_s(errtxt, len, "", 1+strlen(""));
 		rd_kafka_message_destroy(rkmessage);
 	}
 	else 
 	{
-		strncpy_s(errtxt, len, "no msg", strlen("no msg"));
+		strncpy_s(errtxt, len, "no msg", 1+strlen("no msg"));
 		return 1;
 	}
 	return 0;
@@ -315,12 +344,14 @@ LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, 
 	return 0;
 }
 
-LIBRARY_API int DRMessageError(int* err, char* errtxt, int length)
+LIBRARY_API int DRMessageError(int* err, char* errtxt, int *plen)
 {
+	size_t len = *plen;
+	*errtxt = 0;
 	rd_kafka_resp_err_t errorid = (rd_kafka_resp_err_t)*err;
 	const char* DR_msgerror = rd_kafka_err2str(errorid);
-	strncpy_s(errtxt, length, DR_msgerror, strlen(DR_msgerror));
-
+	strncpy_s(errtxt, len, DR_msgerror, strlen(DR_msgerror));
+	*plen =(int) strlen(DR_msgerror);
 	return 0;
 }
 
@@ -339,14 +370,23 @@ LIBRARY_API int DelTopicConf(void* topicconf)
 	return 0;
 }
 
-LIBRARY_API int SetTopicConf(void* topicconf, char* key, char* val, char* errtxt, int len)
+LIBRARY_API int SetTopicConf(void* topicconf, char* key, char* val, char* errtxt, int *plen)
 {
-	return rd_kafka_topic_conf_set((rd_kafka_topic_conf_t*)topicconf, key, val, errtxt, len);
+	rd_kafka_conf_res_t res;
+	size_t len = *plen;
+	*errtxt = 0;
+	res= rd_kafka_topic_conf_set((rd_kafka_topic_conf_t*)topicconf, key, val, errtxt, len);
+	if (res == RD_KAFKA_CONF_OK)
+		*plen = 0;
+	else
+		*plen = (int)strlen(errtxt);
+
+	return (int)res;
 }
 
 void Add(char* buffer,const char* str, int* poff, int  max)
 {
-	int len = strlen(str);
+	int len =(int) strlen(str);
 
 	if (buffer != NULL && max >= len + *poff)
 		memcpy(buffer + *poff, str, len);
@@ -363,14 +403,14 @@ LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
 	Add(buffer, "\"I4 %P|InitKafka >P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|UninitProducer P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|UninitConsumer P\",", &off, *psize);
-	Add(buffer, "\"I4 %P|SetKafkaConf P <0T1 <0T1 >0T1 I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|SetKafkaConf P <0T1 <0T1 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|NewTopicPartitionList >P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SetTopicPartitionList P <0T1\",", &off, *psize);
-	Add(buffer, "\"I4 %P|SubscribeConsumerTPList P P >0T1 I4\",", &off, *psize);
-	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 I4\",", &off, *psize);
-	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|SubscribeConsumerTPList P P >0T1 =I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 =I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DeliveryReport P >I8[] >I4[] =I4\",", &off, *psize);
-	Add(buffer, "\"I4 %P|DRMessageError <I4 >0T1 I4\"", &off, *psize);
+	Add(buffer, "\"I4 %P|DRMessageError <I4 >0T1 =I4\"", &off, *psize);
 	Add(buffer, "]", &off, *psize);
 	Add(buffer, "}", &off, *psize);
 
