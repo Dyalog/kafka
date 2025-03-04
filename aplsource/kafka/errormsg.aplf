@@ -1,4 +1,5 @@
- r←errormsg errid
+ r←errormsg errid;len;msg;err
  ⍝ get the text for an error number
  ⍝ errid  error  number
- r←DRMessageError errid 512 512
+ (err msg len)←3↑DRMessageError errid 512 512
+  r←err (len↑msg)

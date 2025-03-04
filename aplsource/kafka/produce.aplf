@@ -1,8 +1,13 @@
- r←produce(prod topic_name payload key partition)
+ r←produce(prod topic_name payload key partition);err;msgid;msg;len
  ⍝ Produce a messages to the kafka server
  ⍝ prod porducer instance
  ⍝ topic_name topic name
  ⍝ payload payload
  ⍝ key key
  ⍝ partition partition
- r←Produce prod topic_name payload(≢payload)key(≢key)partition 1 512 512
+ (err msgid msg len)←4↑Produce prod topic_name payload(≢payload)key(≢key)partition 1 512 512
+ :if 0≠err
+    r←err msgid (len↑msg)
+ :else
+    r←0 msgid ''
+:endif

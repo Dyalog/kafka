@@ -1,11 +1,11 @@
- r←subscribe_topic_partition(cons topic_partition_list)
+ r←subscribe_topic_partition(cons topic_partition_list);err;msg;len
  ⍝ Subscribe to a list of topics
 ⍝ cons Instance of a COnsumer
 ⍝ topic_partition_list list of topics
 
- r←SubscribeConsumerTPList cons topic_partition_list 512 512
- :If 0≠⊃r
-     r←r
+ (err msg len)←3↑SubscribeConsumerTPList cons topic_partition_list 512 512
+ :If 0≠err
+     r←err (len↑msg)
  :Else
      r←0 ''
  :EndIf
