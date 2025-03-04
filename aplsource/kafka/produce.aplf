@@ -5,7 +5,7 @@
  ⍝ payload payload
  ⍝ key key
  ⍝ partition partition
- (err msgid msg len)←Produce prod topic_name payload(≢payload)key(≢key)partition 1 512 512
+ (err msgid msg len)←4↑Produce prod topic_name payload(≢payload)key(≢key)partition 1 512 512
  :if 0≠err
     r←err msgid (len↑msg)
  :else
