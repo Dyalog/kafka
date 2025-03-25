@@ -1,0 +1,2 @@
+ r←commit(cons asynch)
+ r←Commit cons 0 asynch

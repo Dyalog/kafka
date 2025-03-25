@@ -95,6 +95,11 @@
       :If 0=⊃r
           r←0(⎕NEW #.Record(r[2 3 4 5]))
       :EndIf
+    ∇  
+    
+    ∇ r←commit asynch
+      :Access public
+      r←kafka.commit cons asynch
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
