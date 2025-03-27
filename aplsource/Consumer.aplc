@@ -60,9 +60,14 @@
       r←kafka.new_topic_partition
     ∇
 
-    ∇ r←set_topic_partition(topic_partition_list topicname)
+    ∇ r←set_topic_partition(topic_partition_list topicname partition)
       :Access public
-      r←kafka.set_topic_partition topic_partition_list topicname
+      r←kafka.set_topic_partition topic_partition_list topicname partition
+    ∇
+
+    ∇ r←set_offset(topic_partition_list topicname partition offset)
+      :Access public
+      r←kafka.set_offset topic_partition_list topicname partition offset
     ∇
 
     ∇ r←subscribe_topic_partition topic_partition_list
@@ -75,7 +80,7 @@
       
       :If 0≠≢topic_list
           topic_partition_list←topic_partition
-          set_topic_partition¨ topic_partition_list,¨⊂¨(,⊆topic_list)~⊂''
+          set_topic_partition¨((topic_partition_list,¨⊂¨(,⊆topic_list)~⊂''),¨⊂0)
           r←subscribe_topic_partition topic_partition_list
       :Else
       ⍝ Throw error   
@@ -97,9 +102,9 @@
       :EndIf
     ∇  
     
-    ∇ r←commit asynch
+    ∇ r←commit(tplist asynch)
       :Access public
-      r←kafka.commit cons asynch
+      r←kafka.commit cons tplist asynch
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝

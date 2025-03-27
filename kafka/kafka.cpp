@@ -199,13 +199,27 @@ LIBRARY_API int NewTopicPartitionList(void** subscr)
 }
 
 
-LIBRARY_API int SetTopicPartitionList(void* subscr, char* topic)
+LIBRARY_API int SetTopicPartitionList(void* subscr, char* topic, int32_t partition)
 {
-	
+
 	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
-	rd_kafka_topic_partition_list_add(subscription, (const char*) topic, 0);
+	rd_kafka_topic_partition_list_add(subscription, 
+								     (const char*)topic, 
+									  partition);
 
 	return 0;
+}
+
+LIBRARY_API int SetOffset(void* subscr, char* topic, int32_t partition, int64_t offset)
+{
+	rd_kafka_resp_err_t res;
+	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
+	res = rd_kafka_topic_partition_list_set_offset(subscription, 
+													(const char*) topic, 
+													partition, 
+													offset);
+
+	return (int)res;
 }
 
 LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt, int *plen)
@@ -224,7 +238,7 @@ LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt,
 	else
 		*plen = (int)strlen(errtxt);
 
-	res = rd_kafka_subscribe(kf->rk, subscription);
+	res = rd_kafka_subscribe(kf->rk, subscription); // Only the "topic" field is used here
 	//rd_kafka_resp_err_t err_p = rd_kafka_assign(kf->rk, subscription);
 
 	rd_kafka_topic_partition_list_destroy(subscription);
@@ -294,21 +308,17 @@ LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payloa
 	}
 	return 0;
 }
-LIBRARY_API int Commit(void* cons, void* subscr, int* async) 
+
+LIBRARY_API int Commit(void* cons, void* subscr, int32_t async)
 {
 	kafka_struct* co = (kafka_struct*)cons;
 	rd_kafka_t* rk = (rd_kafka_t*)co->rk;
 	rd_kafka_topic_partition_list_t* offsets = (rd_kafka_topic_partition_list_t*)subscr;
 	rd_kafka_resp_err_t res;
 
-/*	rd_kafka_resp_err_t res_committed = rd_kafka_committed(rk,
-													       offsets,
-														   10
-										);
-	offsets->elems->offset = offsets->elems->offset + 1;*/
 	res = rd_kafka_commit(rk,
 						  offsets,
-						  (int) async
+						  async
 		  );
 	
 	return (int) res;
@@ -423,10 +433,11 @@ LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
 	Add(buffer, "\"I4 %P|UninitConsumer P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SetKafkaConf P <0T1 <0T1 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|NewTopicPartitionList >P\",", &off, *psize);
-	Add(buffer, "\"I4 %P|SetTopicPartitionList P <0T1\",", &off, *psize);
+	Add(buffer, "\"I4 %P|SetTopicPartitionList P <0T1 I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|SetOffset P <0T1 I4 I8\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SubscribeConsumerTPList P P >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 =I4\",", &off, *psize);
-	Add(buffer, "\"I4 %P|Commit P P <I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Commit P P I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DeliveryReport P >I8[] >I4[] =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DRMessageError <I4 >0T1 =I4\"", &off, *psize);
