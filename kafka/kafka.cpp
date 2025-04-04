@@ -26,6 +26,11 @@ int strncpy_s(char* dst, size_t ds, const char* src, size_t ss)
 unsigned long long global_counter=0; // added =0
 
 typedef struct {
+	rd_kafka_topic_partition_list_t* tplist;
+	rd_kafka_resp_err_t err;
+} commit_report;
+
+typedef struct {
 	unsigned long long msg_id;
 	rd_kafka_resp_err_t err;
 } delivery_report;
@@ -66,6 +71,12 @@ static void on_delivery(rd_kafka_t* rk, const rd_kafka_message_t* rkmessage, voi
 	drs->counter++;
 }
 
+static void on_commit(rd_kafka_t* rk, rd_kafka_resp_err_t err,	rd_kafka_topic_partition_list_t* topic_partition_list, void* opaque) {
+
+	commit_report* cr = (commit_report*)rd_kafka_opaque(rk);
+	cr->tplist = rd_kafka_topic_partition_list_copy(topic_partition_list);
+	cr->err = err;
+}
 
 LIBRARY_API int Version(char* version, int len)
 {
@@ -226,6 +237,19 @@ LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt,
 	kafka_struct* kf = (kafka_struct*)kafka;
 	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
 
+	// Commit Callback. How to avoid if synch?
+	rd_kafka_conf_set_offset_commit_cb(kf->conf, on_commit);
+
+	// Allocate a commit_report for cb
+	commit_report* cb = (commit_report*)calloc(1, sizeof(commit_report));
+	// When committing an offset, the subscription list is the biggest list on which you can commit offsets
+	// (with option 0) otherwise, when specifying a tplist, that should be a subset, 
+	// so we create enough space by allocating subscription->cnt number of topic/partition
+	cb->tplist = rd_kafka_topic_partition_list_new(subscription->cnt);
+	
+	// Contained in commit report
+	rd_kafka_conf_set_opaque(kf->conf, (void*)cb);
+
 	rd_kafka_t* rk = rd_kafka_new(RD_KAFKA_CONSUMER, kf->conf, errtxt, len);
 	kf->rk = rk;
 	if (NULL!=rk)
@@ -364,6 +388,84 @@ LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, 
 	return 0;
 }
 
+
+LIBRARY_API int CommitReport(void* cons, char* topics, uint32_t* topiclen, int32_t* partitions, int64_t* offsets, int* err, int* listlen)
+{
+	// Copy the Consumer object from APL
+	kafka_struct* co = (kafka_struct*)cons;
+	rd_kafka_t* rk;
+	rk = (rd_kafka_t*)co->rk;
+
+	// Retrive commit callback for the consumer
+	commit_report* cr = (commit_report*)rd_kafka_opaque(rk);
+
+	// Trigger the on_commit function to produce the CR 
+	rd_kafka_consumer_poll(rk, 500);
+
+	// Need a way to check that the cr has something in it
+	// if I call commit report and the list is not populated, it will complain
+	// What should I add??
+	if (cr->tplist->size > 0) {
+		
+		// Topic partition offset: this will point to each rd_kafka_topic_partition_t in cr->tplist
+		rd_kafka_topic_partition_t* tpo;
+
+		// Pointer to topics names
+		char** topic = (char**)calloc(cr->tplist->cnt, sizeof(char*));
+
+		// Need this to create enough space to return the topics list
+		int totaltopiclen = 0;
+		// Loop over all the topics/partitions
+		for (int i = 0; i < cr->tplist->cnt; i++)
+		{
+			// Retrive each rd_kafka_topic_partition_t 
+			tpo = &cr->tplist->elems[i];
+
+			// Save each topic, partition and offset, and the error in the cb
+			topic[i] = tpo->topic;
+			partitions[i] = tpo->partition;
+			offsets[i] = tpo->offset;
+			err[i] = tpo->err;
+
+			// Create also space for the topic names
+			totaltopiclen = strlen(topic[i]) + totaltopiclen;
+		}
+
+		// Topic length considering spaces and null
+		*topiclen = (uint32_t)(totaltopiclen + (int)cr->tplist->cnt);
+		
+		// Copy topic names to APL
+		char* dest = topics;
+		for (int i = 0; i < cr->tplist->cnt; i++) {
+			size_t len = strlen(topic[i]);
+			memcpy(dest, topic[i], len);
+			dest += len;
+			// Add blanks and null
+			if (i < cr->tplist->cnt - 1) {
+				*dest = ' ';
+				dest++;
+			}
+			else
+				*dest = '\0';
+		}
+
+		// Copy to APL the number of rd_kafka_topic_partition_t in cr->tplist
+		*listlen = (int)cr->tplist->cnt;
+
+		// Clean up
+		 free(topic);
+		// Should I free tplist?
+		rd_kafka_topic_partition_list_destroy(cr->tplist);
+	}
+	else
+	{
+		//errormsg
+		return 1;
+	}
+	return 0;
+
+}
+
 LIBRARY_API int DRMessageError(int* err, char* errtxt, int *plen)
 {
 	size_t len = *plen;
@@ -432,6 +534,7 @@ LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
 	Add(buffer, "\"I4 %P|Commit P P I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DeliveryReport P >I8[] >I4[] =I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|CommitReport P >0T1 =U4 >I4[] >I8[] >I4[] =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DRMessageError <I4 >0T1 =I4\"", &off, *psize);
 	Add(buffer, "]", &off, *psize);
 	Add(buffer, "}", &off, *psize);

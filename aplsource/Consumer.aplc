@@ -102,11 +102,15 @@
       :EndIf
     ∇  
     
-    ∇ r←commit
+    ∇ r←commit asynch
       :Access public
-      r←kafka.commit cons 0 0
+      r←kafka.commit cons 0 asynch
     ∇
 
+    ∇ r←commit_report;err;topic;tlenght;partition;offset;tlength
+      :Access public
+      r←kafka.delivery_commit cons
+    ∇
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Helpers
     ∇ r←get_consumer

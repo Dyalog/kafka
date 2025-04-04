@@ -56,5 +56,6 @@ extern "C"
 
 	LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, int* plength);
 	LIBRARY_API int DRMessageError(int* err, char* errtxt, int *plen);
-	// Do we need these?
+	LIBRARY_API int CommitReport(void* cons, char* topics, uint32_t* topiclen, int32_t* partitions, int64_t* offsets, int* err, int* listlen);
+		// Do we need these?
 }
