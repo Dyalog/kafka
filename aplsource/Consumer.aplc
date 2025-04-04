@@ -102,9 +102,9 @@
       :EndIf
     ∇  
     
-    ∇ r←commit(tplist asynch)
+    ∇ r←commit
       :Access public
-      r←kafka.commit cons tplist asynch
+      r←kafka.commit cons 0 0
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
