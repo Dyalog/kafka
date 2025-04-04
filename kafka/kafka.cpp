@@ -203,9 +203,7 @@ LIBRARY_API int SetTopicPartitionList(void* subscr, char* topic, int32_t partiti
 {
 
 	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
-	rd_kafka_topic_partition_list_add(subscription, 
-								     (const char*)topic, 
-									  partition);
+	rd_kafka_topic_partition_list_add(subscription, (const char*)topic, partition);
 
 	return 0;
 }
@@ -214,10 +212,7 @@ LIBRARY_API int SetOffset(void* subscr, char* topic, int32_t partition, int64_t 
 {
 	rd_kafka_resp_err_t res;
 	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
-	res = rd_kafka_topic_partition_list_set_offset(subscription, 
-													(const char*) topic, 
-													partition, 
-													offset);
+	res = rd_kafka_topic_partition_list_set_offset(subscription, (const char*) topic, partition, offset);
 
 	return (int)res;
 }
@@ -316,10 +311,7 @@ LIBRARY_API int Commit(void* cons, void* subscr, int32_t async)
 	rd_kafka_topic_partition_list_t* offsets = (rd_kafka_topic_partition_list_t*)subscr;
 	rd_kafka_resp_err_t res;
 
-	res = rd_kafka_commit(rk,
-						  offsets,
-						  async
-		  );
+	res = rd_kafka_commit(rk, offsets, async);
 	
 	return (int) res;
 }
