@@ -73,7 +73,9 @@ static void on_delivery(rd_kafka_t* rk, const rd_kafka_message_t* rkmessage, voi
 
 static void on_commit(rd_kafka_t* rk, rd_kafka_resp_err_t err,	rd_kafka_topic_partition_list_t* topic_partition_list, void* opaque) {
 
-	commit_report* cr = (commit_report*)rd_kafka_opaque(rk);
+	//commit_report* cr = (commit_report*)rd_kafka_opaque(rk);
+
+	commit_report* cr = (commit_report*)opaque;
 	cr->tplist = rd_kafka_topic_partition_list_copy(topic_partition_list);
 	cr->err = err;
 }
@@ -233,36 +235,34 @@ LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt,
 	rd_kafka_resp_err_t res;
 	size_t len = *plen;
 	*errtxt = 0;
-
 	kafka_struct* kf = (kafka_struct*)kafka;
 	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
-
-	// Commit Callback. How to avoid if synch?
-	rd_kafka_conf_set_offset_commit_cb(kf->conf, on_commit);
-
-	// Allocate a commit_report for cb
-	commit_report* cb = (commit_report*)calloc(1, sizeof(commit_report));
-	// When committing an offset, the subscription list is the biggest list on which you can commit offsets
-	// (with option 0) otherwise, when specifying a tplist, that should be a subset, 
-	// so we create enough space by allocating subscription->cnt number of topic/partition
-	cb->tplist = rd_kafka_topic_partition_list_new(subscription->cnt);
 	
-	// Contained in commit report
-	rd_kafka_conf_set_opaque(kf->conf, (void*)cb);
+	// Set on_commit fn as callback for commit
+	// rd_kafka_conf_set_offset_commit_cb(kf->conf, on_commit);
+	// Allocate a commit_report for cb
+	commit_report* cr = (commit_report*)calloc(1, sizeof(commit_report));
+	// Create enough space by allocating subscription->cnt number of topic/partition
+	cr->tplist = rd_kafka_topic_partition_list_new(subscription->cnt);
+	// Set cr as opaque for commit callback
+	rd_kafka_conf_set_opaque(kf->conf, (void*)cr);
 
+	// Init consumer on its config conf
 	rd_kafka_t* rk = rd_kafka_new(RD_KAFKA_CONSUMER, kf->conf, errtxt, len);
 	kf->rk = rk;
 	if (NULL!=rk)
 		*plen = 0;
 	else
 		*plen = (int)strlen(errtxt);
-
-	res = rd_kafka_subscribe(kf->rk, subscription); // Only the "topic" field is used here
-	//rd_kafka_resp_err_t err_p = rd_kafka_assign(kf->rk, subscription);
-
-	rd_kafka_topic_partition_list_destroy(subscription);
 	
+	// Subscribe consumer to topic partition list
+	res = rd_kafka_subscribe(kf->rk, subscription); // Only the "topic" field is used here
+
+	// Set the poll call
 	rd_kafka_poll_set_consumer(kf->rk);
+
+	// Cleaning
+	rd_kafka_topic_partition_list_destroy(subscription);
 	kf->conf = NULL;
 	return (int) res;
 }
@@ -333,10 +333,21 @@ LIBRARY_API int Commit(void* cons, void* subscr, int32_t async)
 	kafka_struct* co = (kafka_struct*)cons;
 	rd_kafka_t* rk = (rd_kafka_t*)co->rk;
 	rd_kafka_topic_partition_list_t* offsets = (rd_kafka_topic_partition_list_t*)subscr;
+	
 	rd_kafka_resp_err_t res;
 
-	res = rd_kafka_commit(rk, offsets, async);
-	
+
+	if (async) {
+		// Get the commit_report as opaque and pass it to the on_commit callback
+		commit_report* cr = (commit_report*)rd_kafka_opaque(rk);
+		// rkqu is NULL - see doc for reference
+		rd_kafka_commit_queue(rk, offsets, NULL, on_commit, cr);
+		// Async, return no error while committing, get back the error only when asking for report
+		res = = RD_KAFKA_RESP_ERR_NO_ERROR;
+	}
+	else 		
+		res = rd_kafka_commit(rk, offsets, async);
+
 	return (int) res;
 }
 
@@ -399,13 +410,10 @@ LIBRARY_API int CommitReport(void* cons, char* topics, uint32_t* topiclen, int32
 	// Retrive commit callback for the consumer
 	commit_report* cr = (commit_report*)rd_kafka_opaque(rk);
 
-	// Trigger the on_commit function to produce the CR 
-	rd_kafka_consumer_poll(rk, 500);
-
 	// Need a way to check that the cr has something in it
 	// if I call commit report and the list is not populated, it will complain
 	// What should I add??
-	if (cr->tplist->size > 0) {
+	if ( !(int)cr->err) {
 		
 		// Topic partition offset: this will point to each rd_kafka_topic_partition_t in cr->tplist
 		rd_kafka_topic_partition_t* tpo;
@@ -460,7 +468,7 @@ LIBRARY_API int CommitReport(void* cons, char* topics, uint32_t* topiclen, int32
 	else
 	{
 		//errormsg
-		return 1;
+		return (int) cr->err;
 	}
 	return 0;
 
