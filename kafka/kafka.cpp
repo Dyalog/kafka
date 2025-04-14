@@ -343,7 +343,7 @@ LIBRARY_API int Commit(void* cons, void* subscr, int32_t async)
 		// rkqu is NULL - see doc for reference
 		rd_kafka_commit_queue(rk, offsets, NULL, on_commit, cr);
 		// Async, return no error while committing, get back the error only when asking for report
-		res = = RD_KAFKA_RESP_ERR_NO_ERROR;
+		res = RD_KAFKA_RESP_ERR_NO_ERROR;
 	}
 	else 		
 		res = rd_kafka_commit(rk, offsets, async);
