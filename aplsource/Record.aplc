@@ -3,13 +3,14 @@
 :field Public Payload
 :field Public Key
 :field Public Partition 
-
+:field Public Offset
 
 ∇Clear
 Topic←''
 Payload←''
 Key←''
 Partition←¯1
+Offset←¯1
 ∇           
 
 ∇Make
@@ -52,6 +53,15 @@ Key←key
 Partition←partition
 ∇
 
+∇Make5 (topic payload key partition offset)
+:access public
+:implements constructor
+Topic←topic
+Payload←payload
+Key←key
+Partition←partition
+Offset←offset
+∇
  
 
 ∇r←asArg

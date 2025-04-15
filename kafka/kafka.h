@@ -51,7 +51,7 @@ extern "C"
 	LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt, int *plen);
 	LIBRARY_API int Produce(void* prod, char* topic, char* payload, uint32_t paylen, char* key, uint32_t keylen, int32_t partition, uint64_t* msgid, char* errtxt, int *plen);
 
-	LIBRARY_API int Consume(void* cons, char* topic, uint32_t* topiclen, char* payload, uint32_t* paylen, char* key, uint32_t* keylen, int32_t* partition, char* errtxt, int *plen);
+	LIBRARY_API int Consume(void* cons, char* topic, uint32_t* topiclen, char* payload, uint32_t* paylen, char* key, uint32_t* keylen, int32_t* partition, int64_t* offset, char* errtxt, int *plen);
 	LIBRARY_API int Commit(void* cons, void* subscr);
 
 	LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, int* plength);

@@ -244,7 +244,7 @@ LIBRARY_API int SubscribeConsumerTPList(void* kafka, void* subscr, char* errtxt,
 }
 
 
-LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payload,uint32_t *paylen,char* key, uint32_t *keylen,int32_t *partition,  char* errtxt, int *plen)
+LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payload,uint32_t *paylen,char* key, uint32_t *keylen,int32_t *partition, int64_t* offset,  char* errtxt, int *plen)
 {
 	kafka_struct* co = (kafka_struct*)cons;
 	rd_kafka_message_t* rkmessage;
@@ -288,6 +288,7 @@ LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payloa
 //		strncpy_s(payload, *paylen, (char*)rkmessage->payload, rkmessage->len);
 //		strncpy_s(key, *keylen,(char*) rkmessage->key, rkmessage->key_len);
 		*partition = rkmessage->partition;
+		*offset = (int64_t)rkmessage->offset;
 
 		*topiclen = (uint32_t)tlen;
 		*paylen = (uint32_t)rkmessage->len;
@@ -429,7 +430,7 @@ LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
 	Add(buffer, "\"I4 %P|SetTopicPartitionList P <0T1 I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SetOffset P <0T1 I4 I8\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SubscribeConsumerTPList P P >0T1 =I4\",", &off, *psize);
-	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 =I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >I8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Commit P P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DeliveryReport P >I8[] >I4[] =I4\",", &off, *psize);
