@@ -52,7 +52,7 @@ extern "C"
 	LIBRARY_API int Produce(void* prod, char* topic, char* payload, uint32_t paylen, char* key, uint32_t keylen, int32_t partition, uint64_t* msgid, char* errtxt, int *plen);
 
 	LIBRARY_API int Consume(void* cons, char* topic, uint32_t* topiclen, char* payload, uint32_t* paylen, char* key, uint32_t* keylen, int32_t* partition, char* errtxt, int *plen);
-	LIBRARY_API int Commit(void* cons, void* subscr, int32_t async);
+	LIBRARY_API int Commit(void* cons, void* subscr);
 
 	LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, int* plength);
 	LIBRARY_API int DRMessageError(int* err, char* errtxt, int *plen);

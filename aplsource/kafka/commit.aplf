@@ -1,2 +1,2 @@
- r←commit(cons tplist asynch)
- r←Commit cons tplist asynch
+ r←commit(cons tplist)
+ r←Commit cons tplist

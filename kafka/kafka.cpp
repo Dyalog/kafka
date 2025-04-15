@@ -304,14 +304,15 @@ LIBRARY_API int Consume(void* cons, char* topic,uint32_t *topiclen, char* payloa
 	return 0;
 }
 
-LIBRARY_API int Commit(void* cons, void* subscr, int32_t async)
+LIBRARY_API int Commit(void* cons, void* subscr)
 {
 	kafka_struct* co = (kafka_struct*)cons;
 	rd_kafka_t* rk = (rd_kafka_t*)co->rk;
 	rd_kafka_topic_partition_list_t* offsets = (rd_kafka_topic_partition_list_t*)subscr;
 	rd_kafka_resp_err_t res;
 
-	res = rd_kafka_commit(rk, offsets, async);
+	// Allow only sync
+	res = rd_kafka_commit(rk, offsets, 0);
 	
 	return (int) res;
 }
@@ -429,7 +430,7 @@ LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
 	Add(buffer, "\"I4 %P|SetOffset P <0T1 I4 I8\",", &off, *psize);
 	Add(buffer, "\"I4 %P|SubscribeConsumerTPList P P >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >0T1 =I4\",", &off, *psize);
-	Add(buffer, "\"I4 %P|Commit P P I4\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Commit P P\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DeliveryReport P >I8[] >I4[] =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DRMessageError <I4 >0T1 =I4\"", &off, *psize);

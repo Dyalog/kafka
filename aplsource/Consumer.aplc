@@ -104,7 +104,7 @@
     
     ∇ r←commit
       :Access public
-      r←kafka.commit cons 0 0
+      r←kafka.commit cons 0
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
