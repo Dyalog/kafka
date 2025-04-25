@@ -1,0 +1,2 @@
+ r←commit(cons tplist)
+ r←Commit cons tplist

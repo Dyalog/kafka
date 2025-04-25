@@ -117,12 +117,17 @@ Assumption: you have created a configuration table as per above.
     ```
 3. Consume
 
-    Consume messages in a loop. Kafka parallelism is achieved by consumer groups and partitioned topics. The `Record` interface allow for access by the names `Topic`, `Payload`, `Key`, `Partition`.
+    Consume messages in a loop. Kafka parallelism is achieved by consumer groups and partitioned topics. The `Record` interface allow for access by the names `Topic`, `Payload`, `Key`, `Partition`, `Offset`.
     ```apl
     :While 0=⊃rec←consumer.consume_record
-        (2⊃rec).(Topic Payload Key Partition)
+        (2⊃rec).(Topic Payload Key Partition Offset)
     :EndWhile
     ```
+    If auto-commit is disabled (see the `enable.auto.commit` config parameter for the consumer), it is possible to manually commit offsets
+    ```apl
+    consumer.commit 
+    ```
+    which will synchronously commit the offset on the current partition assignment.
 4. Destroy consumer
     ```apl
     ⎕EX'consumer'

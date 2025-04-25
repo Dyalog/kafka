@@ -1,14 +1,14 @@
- r←consume(cons tl pl kl);err;topic;tlen;pay;paylen;key;keylen;part;msg;len
+ r←consume(cons tl pl kl);err;topic;tlen;pay;paylen;key;keylen;part;offset;msg;len
  ⍝ Consume the next message
  ⍝ cons the consumer instance
  ⍝ tl topic lenght
  ⍝ pl payload length
  ⍝ kl key length
 
- (err topic tlen pay paylen key keylen part msg len)←10↑Consume cons tl tl pl pl kl kl 1 512 512
+ (err topic tlen pay paylen key keylen part offset msg len)←11↑Consume cons tl tl pl pl kl kl 1 1 512 512
  :Select err
  :Case 0   ⍝ we got a message
-     r←0 (tlen↑topic) (paylen↑pay) (keylen↑key) part
+     r←0 (tlen↑topic) (paylen↑pay) (keylen↑key) part offset
  :Case 1   ⍝ no message
      r←err (len↑msg)
  :Case 2   ⍝ we are need more space

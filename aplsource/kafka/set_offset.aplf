@@ -1,8 +1,8 @@
- r←set_topic_partition(topic_partition_list topicname partition)
+ r←set_offset(topic_partition_list topicname partition offset)
  ⍝ Add a topic to a topiclist
  ⍝ topic_partition_list topic partition list
  ⍝ topicname the topic to add to the list
- r←SetTopicPartitionList topic_partition_list topicname partition
+ r←SetOffset topic_partition_list topicname partition offset
  :If 0≠⊃r
      r←r
  :Else
