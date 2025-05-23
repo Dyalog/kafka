@@ -1,0 +1,38 @@
+ConsumerCGroupC;start;cr;r;config;consumer
+ #.Init'.'
+
+⍝ consumer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'consumerCclient'
+ config⍪←'group.id' 'consumerCgroup'
+ config⍪←'auto.offset.reset' 'earliest'
+ ⎕←'consumer configuration'
+ config
+
+⍝ Init consumer
+ consumer←⎕NEW #.Consumer config
+
+⍝ Subscribe consumer to topic
+ ⎕←'Subscribe consumer on topic: topic1 and topic2'
+ consumer.subscribe'topic1' 'topic2'
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
+
+ ⎕←'consumer consumes the queue'
+ start←3⊃⎕AI
+ :While 1
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         :Continue
+     :ElseIf 0=⊃cr
+         (2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
+ :EndWhile
+
+⎕EX'consumer'

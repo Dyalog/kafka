@@ -1,0 +1,45 @@
+TopicProducer (n p);i;config;producer1
+⍝ A producer producing 2×n msgs on two topics.
+⍝ The partitioner assign partitions
+⍝ depending on the key value (p is number of keys)
+:If n<1
+    ⎕←'Please produce at least one message.'
+    :Return
+:EndIf
+
+:If p<1
+    ⎕←'Minimum number of key required is 1.'
+    :Return
+:EndIf
+
+#.Init'./'
+
+⍝ Producer configurations
+config←0 2⍴⍬
+config⍪←'bootstrap.servers' 'localhost:9092'
+config⍪←'client.id' 'producer1client'
+⎕←'Producer configuration'
+config
+
+⍝ Init new Producer
+producer1←⎕NEW #.Producer config
+
+⍝ Produce n bundled messages on topic topic1 and ask for dr
+:For i :In ⍳n
+    producer1.produce_record ⎕NEW #.Record('topic1'('payload',⍕i)('key',⍕p|i-1))
+    :If 0=10|i
+        ⎕←'Delivery report:'
+        producer1.update_outstanding
+    :EndIf
+:EndFor
+
+⍝ Produce n bundled messages on topic topic2 and ask for dr
+:For i :In ⍳n
+    producer1.produce_record ⎕NEW #.Record('topic2'('payload',⍕i)('key',⍕p|i-1))
+    :If 0=10|i
+        ⎕←'Delivery report:'
+        producer1.update_outstanding
+    :EndIf
+:EndFor
+
+⎕EX'producer1'

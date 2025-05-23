@@ -1,10 +1,15 @@
- Sample;start;cr
+ Sample2 n;i;start;cr
 
- ⍝ Topic created with
+ ⍝ Topics created with
  ⍝
  ⍝     kafka-topics.sh \
  ⍝       --bootstrap-server localhost:9092 \
  ⍝       --create --topic "animals" \
+ ⍝       --partitions 3
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "cars" \
  ⍝       --partitions 3
 
  ⍝ Call to Init function
@@ -12,31 +17,30 @@
 
  consumer←⎕NEW Consumer
 
- consumer.configure'bootstrap.servers' 'localhost:9092' ⍝'grs3550.insight.local:9092'
- consumer.configure'client.id' 'martina'⍝'bhcgrs3550'
+ consumer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
+ consumer.configure'client.id' 'bhcgrs3550'
  consumer.configure'group.id' 'dyalog'
 
  l←consumer.topic_partition
-
- consumer.set_topic_partition l'animals'
+ consumer.set_topic_partition l'animals' 0
+ consumer.set_topic_partition l'cars' 0
  consumer.subscribe_topic_partition l
  ⎕DL 5
 
-
- bb←⎕NEW #.Record('animals' 'Blackbird' 'birds')
- so←⎕NEW #.Record('animals' 'Sole' 'fish')
- ef←⎕NEW #.Record('animals' 'Elefant' 'mamal')
-
  producer←⎕NEW Producer
  producer.configure'bootstrap.servers' 'localhost:9092'⍝'grs3550.insight.local:9092'
- producer.configure'client.id' 'martina'⍝'bhc'
+ producer.configure'client.id' 'bhc'
 
- producer.produce_record bb
- producer.produce_record so
- producer.produce_record ef
 
- ⎕DL 1
- producer.delivery_report 13
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕3|i))
+     :If 0=10|i
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
+ producer.update_outstanding
 
  start←3⊃⎕AI
  :While 1

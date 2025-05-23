@@ -1,0 +1,43 @@
+ Example n;i
+ Init '.'
+⍝ Produce and consume `n` messages
+⍝
+
+⍝ Set up the consumer first
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhcgrs3550'
+ config⍪←'group.id' 'dyalog'
+
+ topic_list←'animals' 'cars' 'plants'
+ consumer←⎕NEW Consumer(config topic_list)
+ ⎕DL 5
+⍝ Now set up the producer
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhc'
+ ⍝config⍪←'auto.offset.reset' 'smallest'
+
+ producer←⎕NEW Producer config
+
+⍝ Produce onto the animals topic
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('animals'(75↑'Payload',⍕i)('key',⍕4|i))
+     :If 0=10|i
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+⍝ Produce a few messages to the other topics, too
+ producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
+ producer.produce_record ⎕NEW #.Record('plants' 'iris' 'flowers')
+ producer.update_outstanding
+
+⍝ Let's drain the topics
+ :While 0=⊃cr←consumer.consume_record
+     (2⊃cr).(Topic Payload Key Partition Offset)
+ :EndWhile
+
+⍝ Tidy up
+⍝⎕EX'producer'
+⍝⎕EX'consumer'
