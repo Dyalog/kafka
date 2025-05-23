@@ -1,0 +1,72 @@
+ Example n;i
+⍝ Produce and consume messages
+
+ ⍝ Topics created with
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "animals" \
+ ⍝       --partitions 3
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "cars" \
+ ⍝       --partitions 3
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "plants" \
+ ⍝       --partitions 3
+
+ ⍝ Call to Init function
+ ⍝ Init'path/to/dir/housing/kafka/shared/lib'
+ #.Init'.'
+
+⍝ Set up the producer
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhc'
+
+ producer←⎕NEW #.Producer config
+
+⍝ Produce onto the "animals" topic the message "tiger" with key "cats"
+ producer.produce'animals' 'tiger' 'cats'
+
+⍝ Produce n messages onto the animals topic in a loop by using the Record interface
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('animals'(75↑'Payload',⍕i)('key',⍕4|i))
+     :If 0=10|i
+         ⎕DL 0.5
+         producer.update_outstanding  ⍝ Ask for delivery report
+     :EndIf
+ :EndFor
+
+⍝ Produce a few messages to the other topics, too
+ producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
+ producer.produce_record ⎕NEW #.Record('plants' 'iris' 'flowers')
+ ⍝ Ask for delivery report
+ ⎕DL 0.1
+ producer.update_outstanding
+
+
+⍝ Set up the consumer
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhcgrs3550'
+ config⍪←'group.id' 'dyalog'
+ config⍪←'auto.offset.reset' 'earliest' ⍝ Start consuming from the beginning if no offset is found
+
+ topic_list←'animals' 'cars' 'plants'
+ consumer←⎕NEW #.Consumer config
+ consumer.subscribe topic_list
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
+
+⍝ Let's drain the topics
+ :While 0=⊃cr←consumer.consume_record
+     (2⊃cr).(Topic Payload Key Partition Offset)
+ :EndWhile
+
+⍝ Tidy up
+ ⎕EX'producer'
+ ⎕EX'consumer'

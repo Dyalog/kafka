@@ -1,0 +1,118 @@
+ TestSameGroup;P;CB;CA;i;config;producer;err;start;msgs;consumed_msgs;C;sort_by_key;produced_msgs;consumed_msgsB;consumerB;consumed_msgsA;consumerA;cr
+⍝ Produce 15 msgs on topic1 and 20 on topic2
+⍝ Consume all the msgs in the queue from two consumers
+⍝ and check that both consumers consumes the produced
+⍝ msgs and that they are the same and
+⍝ in the same order within keys.
+
+ #.Init'.'
+
+⍝ Producer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'producerclient'
+ ⎕←'Producer configuration'
+ config
+
+⍝ Init new Producer
+ producer←⎕NEW #.Producer config
+
+⍝ Produce bundled messages on topic and ask for dr
+⎕←'Msgs on topic1'
+ produced_msgs←⍬
+ :For i :In ⍳15
+     msgs←'topic1'('payload',⍕i)('key',⍕5|i)
+     producer.produce_record ⎕NEW #.Record(msgs)
+     produced_msgs,←⊂msgs
+     :If 0=10|i
+         ⎕←'Delivery report:'
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ ⎕←'Msgs on topic2'
+ :For i :In ⍳20
+     msgs←'topic2'('payload',⍕i)('key',⍕5|i)
+     producer.produce_record ⎕NEW #.Record(msgs)
+     produced_msgs,←⊂msgs
+     :If 0=10|i
+         ⎕←'Delivery report:'
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ ⎕EX'producer'
+
+⍝ Consumer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'consumerAclient'
+ config⍪←'group.id' 'consumerABgroup'
+ config⍪←'auto.offset.reset' 'earliest'
+ ⎕←'Consumer configuration'
+ config
+
+⍝ Init new Consumer
+ consumerA←⎕NEW #.Consumer config
+
+
+⍝ Consumer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'consumerBclient'
+ config⍪←'group.id' 'consumerABgroup'
+ config⍪←'auto.offset.reset' 'earliest'
+ ⎕←'Consumer configuration'
+ config
+
+⍝ Init new Consumer
+ consumerB←⎕NEW #.Consumer config
+
+⍝ Subscribe consumer to topic
+ ⎕←'Subscribe consumers to topics topic1 and topic2'
+ consumerA.subscribe'topic1' 'topic2'
+ consumerB.subscribe'topic1' 'topic2'
+
+ ⎕←'Consume the queue'
+ start←3⊃⎕AI
+ consumed_msgsA←⍬
+ :While 1
+     cr←consumerA.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         :Continue
+     :ElseIf 0=⊃cr
+         consumed_msgsA,←⊂(2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
+ :EndWhile
+
+  ⎕←'Consume the queue'
+ start←3⊃⎕AI
+ consumed_msgsB←⍬
+ :While 1
+     cr←consumerB.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         :Continue
+     :ElseIf 0=⊃cr
+         consumed_msgsB,←⊂(2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
+ :EndWhile
+
+ ⎕EX'consumerA'
+ ⎕EX'consumerB'
+
+
+ :If produced_msgs(∧/∊⍨,∊)(¯1↓¨consumed_msgsB),¯1↓¨consumed_msgsA
+     ⎕←'Produced and consumed same messages with same keys by both consumers.'
+ :Else
+     ⎕←'Something went wrong!'
+ :EndIf

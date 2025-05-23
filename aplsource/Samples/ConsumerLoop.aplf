@@ -1,0 +1,39 @@
+ ConsumerLoop;config;consumer;start;last_consumed;cr
+ ⍝ Consumer consumes messages from two topics synchronously
+ 
+ #.Init'.'
+
+⍝ consumer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'consumerLclient'
+ config⍪←'group.id' 'consumerLgroup'
+ config⍪←'auto.offset.reset' 'earliest'
+ ⎕←'consumer configuration'
+ config
+
+⍝ Init consumer
+ consumer←⎕NEW #.Consumer config
+
+⍝ Subscribe consumer to topic
+ ⎕←'Subscribe consumer on topic: topic1 and topic2'
+ consumer.subscribe'topic1' 'topic2'
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
+
+ ⎕←'Start polling messages'
+ start←3⊃⎕AI
+ last_consumed←3⊃⎕AI
+ :While 60000>(3⊃⎕AI)-last_consumed ⍝ Stop listening when not consuming for more than one minute
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         :Continue
+     :ElseIf 0=⊃cr
+         (2⊃cr).(Topic Payload Key Partition)
+         last_consumed←3⊃⎕AI
+         start←0
+     :EndIf
+ :EndWhile
+ ⎕←'Have not received messages in 60 seconds. Stop consuming messages.'
+ ⎕EX'consumer'

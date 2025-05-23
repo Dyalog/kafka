@@ -1,0 +1,62 @@
+ TopicProducer(n p);i;config;producer
+⍝ A producer producing 2×n msgs on two topics.
+⍝ The partitions are assigned depending on the
+⍝ key value (p is number of keys), and messages
+⍝ with same key will be written into the same partition.
+
+
+ ⍝ Topics created with, e.g.
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "topic1" \
+ ⍝       --partitions 2
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "topic2" \
+ ⍝       --partitions 3
+
+ :If n<1
+     ⎕←'Please produce at least one message.'
+     :Return
+ :EndIf
+
+ :If p<1
+     ⎕←'Minimum number of key required is 1.'
+     :Return
+ :EndIf
+
+ #.Init'.'
+
+⍝ Producer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'producerclient'
+ ⎕←'Producer configuration'
+ config
+
+⍝ Init new Producer
+ producer←⎕NEW #.Producer config
+
+⍝ Produce n bundled messages on topic topic1 and ask for dr
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('topic1'('payload',⍕i)('key',⍕p|i-1))
+     :If 0=10|i
+         ⎕←'Delivery report:'
+         ⎕DL 0.5
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+⍝ Produce n bundled messages on topic topic2 and ask for dr
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('topic2'('payload',⍕i)('key',⍕p|i-1))
+     :If 0=10|i
+         ⎕←'Delivery report:'
+         ⎕DL 0.5
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ ⎕EX'producer'

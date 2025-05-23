@@ -1,0 +1,43 @@
+ SimpleConsumer;start;cr;r;config;consumer
+⍝ A consumer consume all messages from a topic
+
+ #.Init'.'
+
+⍝ Consumer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'consumerclient'
+ config⍪←'group.id' 'consumergroup'
+ config⍪←'auto.offset.reset' 'earliest' ⍝ Start consuming from the beginning if no offset is found
+ ⎕←'Consumer configuration'
+ config
+
+⍝ Init new Consumer
+ consumer←⎕NEW #.Consumer config
+
+⍝ Subscribe consumer to topic
+ ⎕←'Subscribe consumer to topic: topic'
+ consumer.subscribe'topic'
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
+
+⍝ Consume messages
+ ⎕←'Consume first message'
+ consumer.consume
+ ⎕←'Consume the queue'
+ start←3⊃⎕AI
+ :While 1
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         :Continue
+     :ElseIf 0=⊃cr
+         (2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
+ :EndWhile
+
+ ⎕EX'consumer'

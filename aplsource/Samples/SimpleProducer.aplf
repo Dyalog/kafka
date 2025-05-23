@@ -1,0 +1,50 @@
+ SimpleProducer(n p);i;config;producer;err
+⍝ Produce n+1 msgs on a topic. The partitions are assigned
+⍝ depending on the key value (p is number of keys), and messages
+⍝ with same key will be written into the same partition.
+
+ ⍝ Topic created with, e.g.
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "topic" \
+ ⍝       --partitions 3
+
+ :If n<1
+     ⎕←'Please produce at least one message.'
+     :Return
+ :EndIf
+
+ :If p<1
+     ⎕←'Minimum number of key required is 1.'
+     :Return
+ :EndIf
+
+ #.Init'.'
+
+⍝ Producer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'producerclient'
+ ⎕←'Producer configuration'
+ config
+
+⍝ Init new Producer
+ producer←⎕NEW #.Producer config
+
+⍝ Produce messages on topic
+ ⎕←'Produce a message on topic: topic'
+ producer.produce'topic' 'payload0' 'key0'
+
+ ⎕←'Produce messages on topic: topic'
+⍝ Produce n bundled messages on topic topic and ask for dr
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('topic'('payload',⍕i)('key',⍕p|i-1))
+     :If 0=10|i
+         ⎕←'Delivery report:'
+         ⎕DL 0.5
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ ⎕EX'producer'

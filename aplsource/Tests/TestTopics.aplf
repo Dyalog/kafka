@@ -1,0 +1,82 @@
+ TestTopics;i;config;producer;err;consumer;start;msgs;produced_msgs;consumed_msgs;C;P;sort_by_key;cr
+⍝ Produce 15 msgs on topic1 and 20 on topic2
+⍝ Consume all the msgs in the queue and check that
+⍝ the consumed msgs are the same and
+⍝ in the same order within each key.
+
+ #.Init'.'
+
+⍝ Producer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'producerclient'
+ ⎕←'Producer configuration'
+ config
+
+⍝ Init new Producer
+ producer←⎕NEW #.Producer config
+
+⍝ Produce bundled messages on topic and ask for dr
+ produced_msgs←⍬
+ :For i :In ⍳15
+     msgs←'topic1'('payload',⍕i)('key',⍕5|i)
+     producer.produce_record ⎕NEW #.Record(msgs)
+     produced_msgs,←⊂msgs
+     :If 0=10|i
+         ⎕←'Delivery report:'
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ :For i :In ⍳20
+     msgs←'topic2'('payload',⍕i)('key',⍕5|i)
+     producer.produce_record ⎕NEW #.Record(msgs)
+     produced_msgs,←⊂msgs
+     :If 0=10|i
+         ⎕←'Delivery report:'
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ ⎕EX'producer'
+
+⍝ Consumer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'consumerclient'
+ config⍪←'group.id' 'consumergroup'
+ config⍪←'auto.offset.reset' 'earliest'
+ ⎕←'Consumer configuration'
+ config
+
+⍝ Init new Consumer
+ consumer←⎕NEW #.Consumer config
+
+⍝ Subscribe consumer to topic
+ ⎕←'Subscribe consumer to topics topic1 and topic2'
+ consumer.subscribe'topic1' 'topic2'
+
+ ⎕←'Consume the queue'
+ start←3⊃⎕AI
+ consumed_msgs←⍬
+ :While 1
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         :Continue
+     :ElseIf 0=⊃cr
+         consumed_msgs,←⊂(2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
+ :EndWhile
+
+ ⎕EX'consumer'
+
+ :If produced_msgs(∧/∊⍨,∊)¯1↓¨consumed_msgs
+     ⎕←'Produced and consumed same messages with same keys.'
+ :Else
+     ⎕←'Something went wrong!'
+ :EndIf
