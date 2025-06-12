@@ -1,4 +1,4 @@
- SimpleConsumer;start;cr;r;config;consumer
+ SimpleConsumer;config;consumer;start;cr
 ⍝ A consumer consume all messages from a topic
 
  #.Init'.'

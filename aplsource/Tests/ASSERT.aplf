@@ -1,0 +1,6 @@
+ ASSERT←{⍺←''
+     failure←'>>> FAILURE <<<'
+     success←'>>> SUCCESS <<<'
+     ⍵:{}⎕←((~0∊⍴⍺)/(80↑⍺),': '),success
+     {}⎕←((~0∊⍴⍺)/(80↑⍺),': '),failure
+ }

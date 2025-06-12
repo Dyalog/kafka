@@ -1,4 +1,4 @@
- TopicProducer(n p);i;config;producer
+ TopicProducer(n p);config;producer;i
 ⍝ A producer producing 2×n msgs on two topics.
 ⍝ The partitions are assigned depending on the
 ⍝ key value (p is number of keys), and messages

@@ -1,4 +1,4 @@
- ConsumerCGroupC;start;cr;r;config
+ ConsumerCGroupC;start;cr;config
 ⍝ ConsumerC is in a different group of ConsumerA and ConsumerB, GroupC
 ⍝ It read from all the partitions
  #.Init'.'

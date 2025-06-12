@@ -1,4 +1,4 @@
- TopicConsumer;start;cr;r;config;consumer
+ TopicConsumer;config;consumer;start;cr
 ⍝ A consumer consume all messages from two different topics
 
  #.Init'.'

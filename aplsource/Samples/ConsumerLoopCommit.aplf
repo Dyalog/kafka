@@ -1,4 +1,4 @@
- ConsumerLoopCommit;start;cr;r;config;consumer;consumed_msg;commit_count;committed;last_consumed
+ ConsumerLoopCommit;config;consumer;start;commit_count;count_msg;last_consumed;cr
 ⍝ Consumer consumes messages from two topics synchronously and commits offsets every 20 messages
 
  #.Init'.'
@@ -25,7 +25,7 @@
  ⎕←'Start polling messages'
  start←3⊃⎕AI
  commit_count←20
- consumed_msg←0
+ count_msg←0
  last_consumed←3⊃⎕AI
  :While 60000>(3⊃⎕AI)-last_consumed
      cr←consumer.consume_record
@@ -36,13 +36,11 @@
          (2⊃cr).(Topic Payload Key Partition)
          last_consumed←3⊃⎕AI
          start←0
-         consumed_msg←consumed_msg+1
-         committed←0
-     :EndIf
-     :If (~committed)∧0=commit_count|consumed_msg
-         ⎕←'Commit consumer'
-         consumer.commit
-         committed←1
+         count_msg←count_msg+1
+         :If 0=commit_count|count_msg
+            ⎕←'Commit consumer'
+            consumer.commit
+         :EndIf
      :EndIf
  :EndWhile
 

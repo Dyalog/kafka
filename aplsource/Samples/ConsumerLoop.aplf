@@ -1,6 +1,6 @@
  ConsumerLoop;config;consumer;start;last_consumed;cr
  ⍝ Consumer consumes messages from two topics synchronously
- 
+
  #.Init'.'
 
 ⍝ consumer configurations
@@ -35,5 +35,5 @@
          start←0
      :EndIf
  :EndWhile
- ⎕←'Have not received messages in 60 seconds. Stop consuming messages.'
+ ⎕←'Have not received messages in 60 seconds... Stop waiting.'
  ⎕EX'consumer'

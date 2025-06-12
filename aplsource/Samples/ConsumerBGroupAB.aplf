@@ -1,4 +1,4 @@
- ConsumerBGroupAB;start;cr;r;config
+ ConsumerBGroupAB;config;start;cr
 ⍝ ConsumerB is in the same group as ConsumerA, GroupAB
 ⍝ they share the messages consuming from different partitions
 

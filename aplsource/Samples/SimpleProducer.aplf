@@ -1,4 +1,4 @@
- SimpleProducer(n p);i;config;producer;err
+ SimpleProducer(n p);config;producer;i
 ⍝ Produce n+1 msgs on a topic. The partitions are assigned
 ⍝ depending on the key value (p is number of keys), and messages
 ⍝ with same key will be written into the same partition.

@@ -1,4 +1,4 @@
- DirectSubscribe n;i;start;cr;config;topic_list;consumer;producer
+ DirectSubscribe n;config;producer;topic_list;consumer;start;cr
  ⍝ Simple example to show how to configure and subscribe to a topic
  ⍝ list directly when the consumer is created.
 

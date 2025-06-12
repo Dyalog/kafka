@@ -1,4 +1,4 @@
- Example n;i
+ Example n;i;config;producer;topic_list;consumer;cr
 ⍝ Produce and consume messages
 
  ⍝ Topics created with
