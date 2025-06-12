@@ -107,6 +107,12 @@
       r←kafka.commit cons 0
     ∇
 
+    ∇ r←committed(topic partition);topic_partition_list
+      :Access public
+      topic_partition_list←topic_partition
+      r←set_topic_partition(topic_partition_list topic partition)
+      r←kafka.committed cons topic_partition_list
+    ∇
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Helpers
     ∇ r←get_consumer
