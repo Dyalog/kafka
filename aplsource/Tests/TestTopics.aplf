@@ -1,4 +1,4 @@
- TestTopics;i;config;producer;err;consumer;start;msgs;produced_msgs;consumed_msgs;C;P;sort_by_key;cr;t_consumed_msgs;t_produced_msgs;s_produced_msgs;s_consumed_msgs;_
+ TestTopics;config;consumer;start;consumed_msgs;cr;_;producer;produced_msgs;i;msgs;t_consumed_msgs;s_consumed_msgs;t_produced_msgs;s_produced_msgs
 ⍝ Produce 15 msgs on topic1 and 20 on topic2
 ⍝ Consume all the msgs in the queue and check that
 ⍝ the consumed msgs are the same and
@@ -12,17 +12,17 @@
  config⍪←'client.id' 'consumerclient'
  config⍪←'group.id' 'consumergroup'
  config⍪←'auto.offset.reset' 'earliest'
- ⎕←'Consumer configuration'
+ ⎕←'Init new consumer with config:'
  config
-
-⍝ Init new Consumer
  consumer←⎕NEW #.Consumer config
 
 ⍝ Subscribe consumer to topic
- ⎕←'Subscribe consumer to topics topic1 and topic2'
+ ⎕←'Subscribe consumer to topics "topic1" and "topic2":'
  consumer.subscribe'topic1' 'topic2'
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
 
- ⎕←'Consume the queue before producing messages for testing'
+ ⎕←'Consume the queue before producing messages for testing:'
  start←3⊃⎕AI
  consumed_msgs←⍬
  :While 1
@@ -43,12 +43,11 @@
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'
  config⍪←'client.id' 'producerclient'
- ⎕←'Producer configuration'
+ ⎕←'Init new producer with config:'
  config
-
 ⍝ Init new Producer
  producer←⎕NEW #.Producer config
-
+ ⎕←'Produce messages on topic1:'
 ⍝ Produce bundled messages on topic and ask for dr
  produced_msgs←⍬
  :For i :In ⍳15
@@ -56,24 +55,31 @@
      producer.produce_record ⎕NEW #.Record(msgs)
      produced_msgs,←⊂msgs
      :If 0=10|i
-         ⎕←'Delivery report:'
+         ⎕←'Outstanding messages:'
+         ⎕DL 0.5
          producer.update_outstanding
      :EndIf
  :EndFor
+ ⎕←'Outstanding messages:'
+ ⎕DL 0.5
+ producer.update_outstanding
 
+ ⎕←'Produce messages on topic2:'
  :For i :In ⍳20
      msgs←'topic2'('payload',⍕i)('key',⍕5|i)
      producer.produce_record ⎕NEW #.Record(msgs)
      produced_msgs,←⊂msgs
      :If 0=10|i
-         ⎕←'Delivery report:'
+         ⎕←'Outstanding messages:'
+         ⎕DL 0.5
          producer.update_outstanding
      :EndIf
  :EndFor
 
+ ⎕←'Close producer:'
  ⎕EX'producer'
 
- ⎕←'Now consume the testing queue'
+ ⎕←'Now consume the testing queue:'
  start←3⊃⎕AI
  consumed_msgs←⍬
  :While 1
@@ -90,13 +96,14 @@
      :EndIf
  :EndWhile
 
+ ⎕←'Close consumer:'
  ⎕EX'consumer'
 
  ⍝ Sort first by topic and then by key. The order is guaranteed in key
- t_consumed_msgs ← 1{⍵[⍋⍵[;⍺];]}↑¯1↓¨consumed_msgs
- s_consumed_msgs ← 3{⍵[⍋⍵[;⍺];]}t_consumed_msgs
+ t_consumed_msgs←1{⍵[⍋⍵[;⍺];]}↑¯1↓¨consumed_msgs
+ s_consumed_msgs←3{⍵[⍋⍵[;⍺];]}t_consumed_msgs
 
- t_produced_msgs ← 1{⍵[⍋⍵[;⍺];]}↑produced_msgs
- s_produced_msgs ← 3{⍵[⍋⍵[;⍺];]}t_produced_msgs
+ t_produced_msgs←1{⍵[⍋⍵[;⍺];]}↑produced_msgs
+ s_produced_msgs←3{⍵[⍋⍵[;⍺];]}t_produced_msgs
 
-'Produced and consumed same messages in the correct order from two topics' ASSERT s_consumed_msgs ≡ s_produced_msgs
+ 'Produced and consumed same messages in the correct order from two topics'ASSERT s_consumed_msgs≡s_produced_msgs

@@ -1,4 +1,4 @@
- TestSameGroup;P;CB;CA;i;config;producer;err;start;msgs;consumed_msgs;C;sort_by_key;produced_msgs;consumed_msgsB;consumerB;consumed_msgsA;consumerA;cr;_;t_consumed_msgsA;s_consumed_msgsA;t_consumed_msgsB;s_consumed_msgsB;t_produced_msgs;s_produced_msgs;s_consumed_msgsAB;t_consumed_msgsAB;consumed_msgsAB
+ TestSameGroup;config;consumerA;consumerB;start;consumed_msgsA;cr;consumed_msgsB;_;producer;produced_msgs;msgs;i;consumed_msgsAB;t_consumed_msgsAB;s_consumed_msgsAB;t_produced_msgs;s_produced_msgs
 ⍝ Produce 15 msgs on topic1 and 20 on topic2
 ⍝ Consume all the msgs in the queue from two consumers
 ⍝ and check that the consumers consumes the produced
@@ -13,7 +13,7 @@
  config⍪←'client.id' 'consumerAclient'
  config⍪←'group.id' 'consumerABgroup'
  config⍪←'auto.offset.reset' 'earliest'
- ⎕←'Consumer configuration'
+ ⎕←'Init new consumerA with config:'
  config
 
 ⍝ Init new Consumer
@@ -26,18 +26,20 @@
  config⍪←'client.id' 'consumerBclient'
  config⍪←'group.id' 'consumerABgroup'
  config⍪←'auto.offset.reset' 'earliest'
- ⎕←'Consumer configuration'
+ ⎕←'Init new consumerB with config:'
  config
 
 ⍝ Init new Consumer
  consumerB←⎕NEW #.Consumer config
 
 ⍝ Subscribe consumer to topic
- ⎕←'Subscribe consumers to topics topic1 and topic2'
+ ⎕←'Subscribe consumers to topics "topic1" and "topic2":'
  consumerA.subscribe'topic1' 'topic2'
  consumerB.subscribe'topic1' 'topic2'
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
 
- ⎕←'Consume the queueA before producing'
+ ⎕←'Consume the queueA before producing:'
  start←3⊃⎕AI
  consumed_msgsA←⍬
  :While 1
@@ -54,7 +56,7 @@
      :EndIf
  :EndWhile
 
-  ⎕←'Consume the queueB before producing'
+ ⎕←'Consume the queueB before producing:'
  start←3⊃⎕AI
  consumed_msgsB←⍬
  :While 1
@@ -75,39 +77,45 @@
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'
  config⍪←'client.id' 'producerclient'
- ⎕←'Producer configuration'
+ ⎕←'Init new producer with config:'
  config
 
 ⍝ Init new Producer
  producer←⎕NEW #.Producer config
 
 ⍝ Produce bundled messages on topic and ask for dr
-⎕←'Msgs on topic1'
+ ⎕←'Produce messages on topic1:'
  produced_msgs←⍬
  :For i :In ⍳15
      msgs←'topic1'('payload',⍕i)('key',⍕5|i)
      producer.produce_record ⎕NEW #.Record(msgs)
      produced_msgs,←⊂msgs
      :If 0=10|i
-         ⎕←'Delivery report:'
+         ⎕←'Outstanding messages:'
+         ⎕DL 0.5
          producer.update_outstanding
      :EndIf
  :EndFor
+ ⎕←'Outstanding messages:'
+ ⎕DL 0.5
+ producer.update_outstanding
 
- ⎕←'Msgs on topic2'
+ ⎕←'Produce messages on topic2:'
  :For i :In ⍳20
      msgs←'topic2'('payload',⍕i)('key',⍕5|i)
      producer.produce_record ⎕NEW #.Record(msgs)
      produced_msgs,←⊂msgs
      :If 0=10|i
-         ⎕←'Delivery report:'
+         ⎕←'Outstanding messages:'
+         ⎕DL 0.5
          producer.update_outstanding
      :EndIf
  :EndFor
 
+ ⎕←'Close producer:'
  ⎕EX'producer'
 
- ⎕←'Consume the queue'
+ ⎕←'ConsumerA consumes the testing queue:'
  start←3⊃⎕AI
  consumed_msgsA←⍬
  :While 1
@@ -124,7 +132,7 @@
      :EndIf
  :EndWhile
 
-  ⎕←'Consume the queue'
+ ⎕←'ConsumerB consumes the testing queue:'
  start←3⊃⎕AI
  consumed_msgsB←⍬
  :While 1
@@ -141,23 +149,16 @@
      :EndIf
  :EndWhile
 
+ ⎕←'Close consumerA and consumerB:'
  ⎕EX'consumerA'
  ⎕EX'consumerB'
 
+⍝ Sort first by topic and then by key. The order is guaranteed in key
+ consumed_msgsAB←consumed_msgsA,consumed_msgsB
+ t_consumed_msgsAB←1{⍵[⍋⍵[;⍺];]}↑¯1↓¨consumed_msgsAB
+ s_consumed_msgsAB←3{⍵[⍋⍵[;⍺];]}t_consumed_msgsAB
 
- :If produced_msgs(∧/∊⍨,∊)(¯1↓¨consumed_msgsB),¯1↓¨consumed_msgsA
-     ⎕←'Produced and consumed same messages with same keys by both consumers.'
- :Else
-     ⎕←'Test failed: Produced and consumed messages differ.'
- :EndIf
+ t_produced_msgs←1{⍵[⍋⍵[;⍺];]}↑produced_msgs
+ s_produced_msgs←3{⍵[⍋⍵[;⍺];]}t_produced_msgs
 
-
-  ⍝ Sort first by topic and then by key. The order is guaranteed in key
- consumed_msgsAB ← consumed_msgsA,consumed_msgsB
- t_consumed_msgsAB ← 1{⍵[⍋⍵[;⍺];]}↑¯1↓¨consumed_msgsAB
- s_consumed_msgsAB ← 3{⍵[⍋⍵[;⍺];]}t_consumed_msgsAB
-
- t_produced_msgs ← 1{⍵[⍋⍵[;⍺];]}↑produced_msgs
- s_produced_msgs ← 3{⍵[⍋⍵[;⍺];]}t_produced_msgs
-
-'Produced and consumed messages from within the same consumer group' ASSERT s_consumed_msgsAB ≡ s_produced_msgs
+ 'Produced and consumed messages from within the same consumer group'ASSERT s_consumed_msgsAB≡s_produced_msgs

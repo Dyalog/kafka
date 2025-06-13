@@ -33,17 +33,15 @@
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'
  config⍪←'client.id' 'producerclient'
- ⎕←'Producer configuration'
+ ⎕←'Init new producer with config:'
  config
-
-⍝ Init new Producer
  producer←⎕NEW #.Producer config
 
 ⍝ Produce n bundled messages on topic topic1 and ask for dr
  :For i :In ⍳n
      producer.produce_record ⎕NEW #.Record('topic1'('payload',⍕i)('key',⍕p|i-1))
      :If 0=10|i
-         ⎕←'Delivery report:'
+         ⎕←'Outstanding messages:'
          ⎕DL 0.5
          producer.update_outstanding
      :EndIf
@@ -53,10 +51,11 @@
  :For i :In ⍳n
      producer.produce_record ⎕NEW #.Record('topic2'('payload',⍕i)('key',⍕p|i-1))
      :If 0=10|i
-         ⎕←'Delivery report:'
+         ⎕←'Outstanding messages:'
          ⎕DL 0.5
          producer.update_outstanding
      :EndIf
  :EndFor
 
+ ⎕←'Close producer:'
  ⎕EX'producer'

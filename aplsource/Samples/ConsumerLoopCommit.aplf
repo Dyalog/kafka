@@ -10,19 +10,17 @@
  config⍪←'group.id' 'consumerLgroup'
  config⍪←'auto.offset.reset' 'earliest'
  config⍪←'enable.auto.commit' 'false'
- ⎕←'consumer configuration'
+ ⎕←'Init new consumer with config:'
  config
-
-⍝ Init consumer
  consumer←⎕NEW #.Consumer config
 
 ⍝ Subscribe consumer to topic
- ⎕←'Subscribe consumer on topic: topic1 and topic2'
+ ⎕←'Subscribe consumer on topics "topic1" and "topic2":'
  consumer.subscribe'topic1' 'topic2'
  ⎕←'Waiting for rebalance before starting consuming...'
  ⎕DL 5
 
- ⎕←'Start polling messages'
+ ⎕←'Start polling messages:'
  start←3⊃⎕AI
  commit_count←20
  count_msg←0
@@ -38,7 +36,7 @@
          start←0
          count_msg←count_msg+1
          :If 0=commit_count|count_msg
-            ⎕←'Commit consumer'
+            ⎕←'Commit consumer:'
             consumer.commit
          :EndIf
      :EndIf

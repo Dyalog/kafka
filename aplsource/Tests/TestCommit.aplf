@@ -1,4 +1,4 @@
- TestCommit;config;consumer;start;consumed_msgs;committed_beforep0;committed_beforep1
+ TestCommit;config;consumer;start;consumed_msgs;cr;_;committed_beforep0;committed_beforep1;producer;produced_msgs;i;msgs;commit_count;count_msg;msgs_p0;msgs_p1;committed_afterp0;committed_afterp1
 ⍝ This test needs a topic "topic" with exactly two partitions.
 ⍝ Produce 15 msgs on topic (with two partitions)
 ⍝ Consume all the msgs in the queue and check that
@@ -13,18 +13,17 @@
  config⍪←'group.id' 'consumergroup'
  config⍪←'auto.offset.reset' 'earliest'
  config⍪←'enable.auto.commit' 'false'
-
- ⎕←'Consumer configuration'
+ ⎕←'Init new consumer with config:'
  config
 
 ⍝ Init new Consumer
  consumer←⎕NEW #.Consumer config
 
 ⍝ Subscribe consumer to topic
- ⎕←'Subscribe consumer to topic'
+ ⎕←'Subscribe consumer to topic "topic":'
  consumer.subscribe'topic'
 
- ⎕←'Consume the queue before producing messages for testing'
+ ⎕←'Consume the queue before producing messages for testing:'
  start←3⊃⎕AI
  consumed_msgs←⍬
  :While 1
@@ -41,26 +40,26 @@
      :EndIf
  :EndWhile
 ⍝ Commit
+ ⎕←'Commit offset:'
  consumer.commit
 
-⍝ Get the last committed offset: ¯1001 is when there is not a valid offset
+⍝ Get the last committed offset. ¯1001 means RD_KAFKA_OFFSET_INVALID
+⍝ from the doc "in case there was no stored offset for that partition".
  :If 0=⊃committed_beforep0←consumer.committed'topic' 0
      :If ¯1001=2⊃committed_beforep0
-         committed_beforep0[2]←0
+         committed_beforep0[2]←0  ⍝ So we set to 0
      :EndIf
  :Else
-     ⎕←'Error in getting committed offset for partition 0. Error code: ',⍕⊃committed_beforep0
-     →0
+     ⎕←'Error in getting the committed offset for partition 0. Error code: ',⍕⊃committed_beforep0
+     :Return
  :EndIf
-
-⍝ Get the last committed offset: ¯1001 is when there is not a valid offset
  :If 0=⊃committed_beforep1←consumer.committed'topic' 1
      :If ¯1001=2⊃committed_beforep1
          committed_beforep1[2]←0
      :EndIf
  :Else
-     ⎕←'Error in getting committed offset for partition 1. Error code: ',⍕⊃committed_beforep1
-     →0
+     ⎕←'Error in getting the committed offset for partition 1. Error code: ',⍕⊃committed_beforep1
+     :Return
  :EndIf
 
 
@@ -68,12 +67,13 @@
  config←0 2⍴⍬
  config⍪←'bootstrap.servers' 'localhost:9092'
  config⍪←'client.id' 'producerclient'
- ⎕←'Producer configuration'
+ ⎕←'Init new producer with config:'
  config
 
 ⍝ Init new Producer
  producer←⎕NEW #.Producer config
 
+ ⎕←'Produce messages on topic:'
 ⍝ Produce bundled messages on topic and ask for dr
  produced_msgs←⍬
  :For i :In ⍳20
@@ -81,14 +81,16 @@
      producer.produce_record ⎕NEW #.Record(msgs)
      produced_msgs,←⊂msgs
      :If 0=10|i
-         ⎕←'Delivery report:'
+         ⎕←'Outstanding messages:'
+         ⎕DL 0.5
          producer.update_outstanding
      :EndIf
  :EndFor
 
+ ⎕←'Close producer:'
  ⎕EX'producer'
 
- ⎕←'Now consume the testing queue'
+ ⎕←'Now consume the testing queue:'
  start←3⊃⎕AI
  commit_count←5                  ⍝ commit every 5 consumed messages
  count_msg←0
@@ -102,7 +104,7 @@
          consumed_msgs,←⊂(2⊃cr).(Topic Payload Key Partition Offset)
          count_msg←count_msg+1
          :If 0=commit_count|count_msg
-             ⎕←'Commit consumer'
+             ⎕←'Commit consumer:'
              consumer.commit
          :EndIf
      :Else
@@ -111,21 +113,22 @@
      :EndIf
  :EndWhile
 
- ⎕←'Commit consumer one last time'
+ ⎕←'Commit consumer one last time:'
  consumer.commit
 
  msgs_p0←+/~4⌷[2]↑consumed_msgs
  msgs_p1←+/4⌷[2]↑consumed_msgs
 
  :If 0≠⊃committed_afterp0←consumer.committed'topic' 0
-     ⎕←'Error in getting committed offset for partition 0. Error code: ',⍕⊃committed_afterp0
-     →0
+     ⎕←'Error in getting the committed offset for partition 0. Error code: ',⍕⊃committed_afterp0
+     :Return
  :EndIf
  :If 0≠⊃committed_afterp1←consumer.committed'topic' 1
-     ⎕←'Error in getting committed offset for partition 1. Error code: ',⍕⊃committed_afterp1
-     →0
+     ⎕←'Error in getting the committed offset for partition 1. Error code: ',⍕⊃committed_afterp1
+     :Return
  :EndIf
 
+ ⎕←'Close consumer:'
  ⎕EX'consumer'
 
  'Manually commit offset on partition 0 and 1 of topic="topic"'ASSERT(msgs_p0=committed_afterp0[2]-committed_beforep0[2])∧msgs_p1=committed_afterp1[2]-committed_beforep1[2]

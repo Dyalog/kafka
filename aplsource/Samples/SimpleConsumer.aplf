@@ -1,5 +1,5 @@
- SimpleConsumer;config;consumer;start;cr
-⍝ A consumer consume all messages from a topic
+ SimpleConsumer;config;consumer;start;cr;err
+⍝ Consumer consume all messages from a topic
 
  #.Init'.'
 
@@ -9,22 +9,20 @@
  config⍪←'client.id' 'consumerclient'
  config⍪←'group.id' 'consumergroup'
  config⍪←'auto.offset.reset' 'earliest' ⍝ Start consuming from the beginning if no offset is found
- ⎕←'Consumer configuration'
+ ⎕←'Init new consumer with config:'
  config
-
-⍝ Init new Consumer
  consumer←⎕NEW #.Consumer config
 
 ⍝ Subscribe consumer to topic
- ⎕←'Subscribe consumer to topic: topic'
+ ⎕←'Subscribe consumer to topic "topic":'
  consumer.subscribe'topic'
  ⎕←'Waiting for rebalance before starting consuming...'
  ⎕DL 5
 
 ⍝ Consume messages
- ⎕←'Consume first message'
+ ⎕←'Consume first message:'
  consumer.consume
- ⎕←'Consume the queue'
+ ⎕←'Consume the queue:'
  start←3⊃⎕AI
  :While 1
      cr←consumer.consume_record
@@ -39,5 +37,5 @@
          :Leave
      :EndIf
  :EndWhile
-
+ ⎕←'Close consumer:'
  ⎕EX'consumer'
