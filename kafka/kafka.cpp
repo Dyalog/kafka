@@ -318,6 +318,23 @@ LIBRARY_API int Commit(void* cons, void* subscr)
 	return (int) res;
 }
 
+LIBRARY_API int Committed(void* cons, void* subscr, int64_t* offset)
+{
+	rd_kafka_resp_err_t res;
+
+	kafka_struct* co = (kafka_struct*)cons;
+	rd_kafka_t* rk = (rd_kafka_t*)co->rk;
+
+	rd_kafka_topic_partition_list_t* subscription = (rd_kafka_topic_partition_list_t*)subscr;
+
+	res = rd_kafka_committed(rk, subscription, 5000); // 5 sec max
+	
+	*offset = subscription->elems[0].offset;
+	
+	rd_kafka_topic_partition_list_destroy(subscription);
+
+	return (int)res;
+}
 
 LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, int* plength)
 {
@@ -432,6 +449,7 @@ LIBRARY_API int32_t Describe(char* buffer, int32_t* psize)
 	Add(buffer, "\"I4 %P|SubscribeConsumerTPList P P >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Consume P >0T1 =U4 >0T1 =U4 >0T1 =U4 >U4 >I8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Commit P P\",", &off, *psize);
+	Add(buffer, "\"I4 %P|Committed P P >I8\",", &off, *psize);
 	Add(buffer, "\"I4 %P|Produce P <0T1 <0T1 U4 <0T1 U4 I4 >U8 >0T1 =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DeliveryReport P >I8[] >I4[] =I4\",", &off, *psize);
 	Add(buffer, "\"I4 %P|DRMessageError <I4 >0T1 =I4\"", &off, *psize);

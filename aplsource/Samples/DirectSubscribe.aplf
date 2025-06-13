@@ -1,0 +1,70 @@
+ DirectSubscribe n;config;producer;topic_list;consumer;start;cr;err
+ ⍝ Simple example to show how to configure and subscribe to a topic
+ ⍝ list directly when the consumer is created.
+
+ #.Init'.'
+
+ ⍝ Producer config
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhc'
+
+ ⎕←'Init new producer with config:'
+ config
+ producer←⎕NEW #.Producer config
+
+ ⎕←'Produce two messages:'
+ ⍝ Produce
+ producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
+ producer.produce_record ⎕NEW #.Record('plants' 'iris' 'flowers' 0)
+
+ ⎕←'Outstanding messages:'
+ ⎕DL 0.5
+ producer.update_outstanding
+
+ ⎕←'Produce in loop:'
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕4|i))
+     :If 0=10|i
+         ⎕←'Outstanding messages:'
+         ⎕DL 0.5
+         producer.update_outstanding
+     :EndIf
+ :EndFor
+
+ ⎕←'Init new consumer with config and topic list:'
+ ⍝ Consumer config and topic_list
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhcgrs3550'
+ config⍪←'group.id' 'dyalog'
+ config⍪←'auto.offset.reset' 'earliest' ⍝ Start consuming from the beginning if no offset is found
+ topic_list←'animals' 'cars' 'plants'
+ config
+ topic_list
+ ⍝ Directly configure and subcribe when creating the consumer
+ consumer←⎕NEW #.Consumer(config topic_list)
+
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
+ ⍝ Consume the queue
+ start←3⊃⎕AI
+ :While 1
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         ⎕DL 0.2
+         :Continue
+     :ElseIf 0=⊃cr
+         (2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
+ :EndWhile
+
+  ⎕←'Close producer and consumer:'
+ ⍝ Tidy up
+ ⎕EX'producer'
+ ⎕EX'consumer'
