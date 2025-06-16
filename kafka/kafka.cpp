@@ -101,9 +101,9 @@ LIBRARY_API int UninitProducer(void* prod)
 LIBRARY_API int UninitConsumer(void* cons)
 {
 	kafka_struct* co = (kafka_struct*)cons;
-	// Close consumer
-	rd_kafka_consumer_close(co->rk);
 	if (co->rk != NULL) {
+		// Close consumer
+		rd_kafka_consumer_close(co->rk);
 		// Destroy the consumer.
 		rd_kafka_destroy(co->rk);
 	}
