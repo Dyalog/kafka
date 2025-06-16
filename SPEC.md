@@ -159,46 +159,59 @@ kafka-topics.sh \
 
 Now, run the following function:
 ```apl
-Example n;i  
-⍝ Produce and consume `n` messages
-⍝
+ Example n;i
+⍝ Produce and consume messages
 
-⍝ Set up the consumer first
-config←0 2⍴⍬
-config⍪←'bootstrap.servers' 'localhost:9092'
-config⍪←'client.id' 'bhcgrs3550'
-config⍪←'group.id' 'dyalog'
+ ⍝ Call to Init function
+ ⍝ Init'path/to/dir/housing/kafka/shared/lib'
+ #.Init'.'
 
-topic_list←'animals' 'cars' 'plants'
-consumer←⎕NEW Consumer(config topic_list)
+⍝ Set up the producer
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhc'
 
-⍝ Now set up the producer
-config←0 2⍴⍬
-config⍪←'bootstrap.servers' 'localhost:9092'
-config⍪←'client.id' 'bhc'
+ producer←⎕NEW Producer config
 
-producer←⎕NEW Producer config
+⍝ Produce onto the "animals" topic the message "tiger" with key "cats"
+ producer.produce'animals' 'tiger' 'cats'
 
-⍝ Produce onto the animals topic
-:For i :In ⍳n
-    producer.produce_record ⎕NEW #.Record('animals'(100↑'Payload',⍕i)('key',⍕4|i))
-    :If 0=10|i
-        producer.update_outstanding
-    :EndIf
-:EndFor
+⍝ Produce n messages onto the animals topic in a loop by using the Record interface
+ :For i :In ⍳n
+     producer.produce_record ⎕NEW #.Record('animals'(75↑'Payload',⍕i)('key',⍕4|i))
+     :If 0=10|i
+         producer.update_outstanding  ⍝ Ask for delivery report
+     :EndIf
+ :EndFor
 
 ⍝ Produce a few messages to the other topics, too
-producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
-producer.produce_record ⎕NEW #.Record('plants' 'iris' 'flowers')
-producer.update_outstanding
+ producer.produce_record ⎕NEW #.Record('cars' 'ferrari' 'sportcars')
+ producer.produce_record ⎕NEW #.Record('plants' 'iris' 'flowers')
+ ⍝ Ask for delivery report
+ producer.update_outstanding
+
+
+⍝ Set up the consumer
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'bhcgrs3550'
+ config⍪←'group.id' 'dyalog'
+ config⍪←'auto.offset.reset' 'earliest' ⍝ Start consuming from the beginning if no offset is found
+
+ topic_list←'animals' 'cars' 'plants'
+ consumer←⎕NEW Consumer config
+ consumer.subscribe topic_list
+
+ ⎕DL 5
 
 ⍝ Let's drain the topics
-:While 0=⊃cr←consumer.consume_record
-    (2⊃cr).(Topic Payload Key Partition)
-:EndWhile
+ :While 0=⊃cr←consumer.consume_record
+     (2⊃cr).(Topic Payload Key Partition Offset)
+ :EndWhile
 
 ⍝ Tidy up
-⎕EX'producer'
-⎕EX'consumer'
+ ⎕EX'producer'
+ ⎕EX'consumer'
+
  ```
 

@@ -1,0 +1,45 @@
+ ConsumerLoopCommit;config;consumer;start;commit_count;count_msg;last_consumed;cr
+⍝ Consumer consumes messages from two topics synchronously and commits offsets every 20 messages
+
+ #.Init'.'
+
+⍝ consumer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'consumerLclient'
+ config⍪←'group.id' 'consumerLgroup'
+ config⍪←'auto.offset.reset' 'earliest'
+ config⍪←'enable.auto.commit' 'false'
+ ⎕←'Init new consumer with config:'
+ config
+ consumer←⎕NEW #.Consumer config
+
+⍝ Subscribe consumer to topic
+ ⎕←'Subscribe consumer on topics "topic1" and "topic2":'
+ consumer.subscribe'topic1' 'topic2'
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
+
+ ⎕←'Start polling messages:'
+ start←3⊃⎕AI
+ commit_count←20
+ count_msg←0
+ last_consumed←3⊃⎕AI
+ :While 60000>(3⊃⎕AI)-last_consumed
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         :Continue
+     :ElseIf 0=⊃cr
+         (2⊃cr).(Topic Payload Key Partition)
+         last_consumed←3⊃⎕AI
+         start←0
+         count_msg←count_msg+1
+         :If 0=commit_count|count_msg
+            ⎕←'Commit consumer:'
+            consumer.commit
+         :EndIf
+     :EndIf
+ :EndWhile
+
+ ⎕EX'consumer'
