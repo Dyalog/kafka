@@ -18,7 +18,7 @@
 
  l←consumer.topic_partition
 
- consumer.set_topic_partition l'animals'
+ consumer.set_topic_partition l'animals' 0
  consumer.subscribe_topic_partition l
  ⎕DL 5
 

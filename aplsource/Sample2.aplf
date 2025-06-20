@@ -22,8 +22,8 @@
  consumer.configure'group.id' 'dyalog'
 
  l←consumer.topic_partition
- consumer.set_topic_partition l'animals'
- consumer.set_topic_partition l'cars'
+ consumer.set_topic_partition l'animals' 0
+ consumer.set_topic_partition l'cars' 0
  consumer.subscribe_topic_partition l
  ⎕DL 5
 
