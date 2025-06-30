@@ -8,5 +8,5 @@
 /packages
 /distribution
 /Win32
-
+/demo*
 test.bat
