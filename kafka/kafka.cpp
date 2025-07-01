@@ -88,28 +88,29 @@ LIBRARY_API int InitKafka(void** kafka)
 LIBRARY_API int UninitProducer(void* prod)
 {
 	kafka_struct* pr = (kafka_struct*)prod;
-
+	int kerr = 0;
 	if (pr->rk != NULL) {
-		rd_kafka_flush((rd_kafka_t*)pr->rk, 500);
+		kerr = rd_kafka_flush((rd_kafka_t*)pr->rk, 500);
 		rd_kafka_destroy((rd_kafka_t*)pr->rk);
 	}
 	free(pr);
 
-	return 0;
+	return kerr;
 }
 
 LIBRARY_API int UninitConsumer(void* cons)
 {
 	kafka_struct* co = (kafka_struct*)cons;
+	int kerr = 0;
 	if (co->rk != NULL) {
 		// Close consumer
-		rd_kafka_consumer_close(co->rk);
+		kerr = rd_kafka_consumer_close(co->rk);
 		// Destroy the consumer.
 		rd_kafka_destroy(co->rk);
 	}
 	free(co);
 
-	return 0;
+	return kerr;
 }
 
 LIBRARY_API int SetKafkaConf(void* kafka, char* key, char* val, char* errtxt, int *plen)

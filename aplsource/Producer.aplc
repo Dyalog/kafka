@@ -26,9 +26,9 @@
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Destructor
-    ∇ unmake
+    ∇ unmake;_
       :Implements destructor
-      kafka.UninitProducer prod
+      _←kafka.UninitProducer prod
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
