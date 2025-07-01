@@ -89,7 +89,7 @@
       (z msgid err len)←kafka.delivery prod  length
      
       r←z,((len↑msgid),[1.5](len↑err))
-      r←r[⍸0≠r[;3];]
+      r←r[{⍵/⍳⍴⍵}0≠r[;3];]
     ∇
 
 
