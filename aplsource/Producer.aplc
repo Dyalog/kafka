@@ -50,6 +50,23 @@
       outstanding⍪←msgid 0
     ∇
 
+    ∇ r←produce_sync args;err;errno;msgid;dr
+      :Access public
+      err←¯12345
+      (errno msgid)← produce args
+      :If 0≠errno
+          r←errno
+          :Return
+      :EndIf
+      :While err=¯12345
+          dr←delivery_report 1
+          :If 2=⍴dr
+          :AndIf 1=⊃⍴2⊃dr
+              err←1 2⌷2⊃dr
+          :EndIf
+      :EndWhile
+      r←err
+    ∇
 
     ∇ r←produce_record record;err;msgid;z
       :Access public
