@@ -47,7 +47,9 @@
       :Access public
       (z msgid err)←kafka.produce prod topic payload key partition
       r←z,msgid
-      outstanding⍪←msgid 0
+      :If z=0
+        outstanding⍪←msgid 0
+      :EndIf
     ∇
 
 
@@ -55,7 +57,9 @@
       :Access public
       (z msgid err)←kafka.produce prod, record.asArg
       r←z,msgid
-      outstanding⍪←msgid 0
+      :If z=0
+        outstanding⍪←msgid 0
+      :EndIf
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
