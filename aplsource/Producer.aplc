@@ -47,7 +47,9 @@
       :Access public
       (z msgid err)←kafka.produce prod topic payload key partition
       r←z,msgid
-      outstanding⍪←msgid 0
+      :If z=0
+        outstanding⍪←msgid 0
+      :EndIf
     ∇
 
 
@@ -55,7 +57,9 @@
       :Access public
       (z msgid err)←kafka.produce prod, record.asArg
       r←z,msgid
-      outstanding⍪←msgid 0
+      :If z=0
+        outstanding⍪←msgid 0
+      :EndIf
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
@@ -66,8 +70,8 @@
       r←z((len↑msgid),[1.5](len↑err))
     ∇
 
-    ∇ r←update_outstanding;err;del;ok;ix
-      :Access public
+    ∇ r←update_outstanding;err;del;ok;ix;outstanding_err
+      :Access public                    
       :While 1
           (err del)←delivery_report 100
      
@@ -81,7 +85,9 @@
               :Leave
           :EndIf
       :EndWhile
-      r←err outstanding
+      outstanding_err←outstanding
+      outstanding←(0=outstanding[;2])⌿outstanding 
+      r←err outstanding_err
     ∇
 
     ∇ r←delivery_report_err length;len;err;msgid;z
