@@ -139,6 +139,7 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 {
 	int kerr = 0;
 	size_t len = *plen;
+	*plen=0;
 	*errtxt = 0;
 
 	kafka_struct* pr = (kafka_struct*)prod;
@@ -155,7 +156,7 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 
 		rd_kafka_t* rk = rd_kafka_new(RD_KAFKA_PRODUCER, pr->conf, errtxt, len);
 		pr->rk = rk;
-		if (NULL==rk)
+		if (NULL!=rk)
 			*plen = 0;
 		else
 			*plen =(int) strlen(errtxt);
