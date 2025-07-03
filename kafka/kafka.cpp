@@ -329,42 +329,45 @@ LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, 
 	rd_kafka_t* rk;
 	rk = (rd_kafka_t*)pr->rk;
 
-	// Retrive delivery callbacks for the producer
-	delivery_reports* drs = (delivery_reports*)rd_kafka_opaque(rk);
-
-	// Trigger the on_delivery function to produce the DR 
-	rd_kafka_poll(rk, 500);
-	
-	// Number of delivery callbacks requested
-	// be careful, it is possible that we have sent n msgs, but
-	// poll has triggered only m<n dr, so we ask for 10 dr, we have sent 10
-	// msg, we may recive 5 dr. We can asks for other 5 later, by calling again
-	int req_drs = min(drs->counter, *plength);
-
-	for (int i = 0; i < req_drs; i++)
-	{
-		msgid[i] = (unsigned long long) drs->drs[i]->msg_id;
-		err[i] = (int)drs->drs[i]->err;
-
-		// Free memory
-		free(drs->drs[i]);
-		drs->drs[i] = NULL;
-	}
-
-	// Check if the CB queue is empty
-	if (*plength >= drs->counter) {
-		*plength = drs->counter;
-		drs->counter = 0;
-	}
-	// If not, move the queued messages at the beginning of the drs array and reset counters
+	if (rk == NULL)
+		*plength = 0;
 	else {
-		drs->counter = drs->counter - *plength;
-		for (int i = 0; i < drs->counter; i++) {
-			drs->drs[i] = drs->drs[i + *plength];
-			drs->drs[i + *plength] = NULL;
+		// Retrive delivery callbacks for the producer
+		delivery_reports* drs = (delivery_reports*)rd_kafka_opaque(rk);
+
+		// Trigger the on_delivery function to produce the DR 
+		rd_kafka_poll(rk, 500);
+
+		// Number of delivery callbacks requested
+		// be careful, it is possible that we have sent n msgs, but
+		// poll has triggered only m<n dr, so we ask for 10 dr, we have sent 10
+		// msg, we may recive 5 dr. We can asks for other 5 later, by calling again
+		int req_drs = min(drs->counter, *plength);
+
+		for (int i = 0; i < req_drs; i++)
+		{
+			msgid[i] = (unsigned long long) drs->drs[i]->msg_id;
+			err[i] = (int)drs->drs[i]->err;
+
+			// Free memory
+			free(drs->drs[i]);
+			drs->drs[i] = NULL;
+		}
+
+		// Check if the CB queue is empty
+		if (*plength >= drs->counter) {
+			*plength = drs->counter;
+			drs->counter = 0;
+		}
+		// If not, move the queued messages at the beginning of the drs array and reset counters
+		else {
+			drs->counter = drs->counter - *plength;
+			for (int i = 0; i < drs->counter; i++) {
+				drs->drs[i] = drs->drs[i + *plength];
+				drs->drs[i + *plength] = NULL;
+			}
 		}
 	}
-
 	return 0;
 }
 
