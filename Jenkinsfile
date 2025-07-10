@@ -46,10 +46,10 @@ pipeline {
             sh '''#!/bin/bash
               set -e
               echo "====== AIX: starting build"
-              export BITS=64 
               export PATH=/opt/freeware/bin:$PATH
 
-              PLATFORM=aix  ./mk_kafka.sh $BITS
+              PLATFORM=aix  ./mk_kafka.sh 64
+              PLATFORM=aix  ./mk_kafka.sh 32
               echo "====== AIX: finished build"
             '''
             stash name: 'dist-aix', includes: 'distribution/aix/'
