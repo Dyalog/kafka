@@ -1,7 +1,7 @@
 ﻿ NA file;Describe;res;funcs;z;version;pp
  version←#.⎕WG'AplVersion'
  :Select ⊃version
- :CaseList 'Linux-64' 'Linux'
+ :CaseList 'Linux-64' 'Linux'  'AIX' 'AIX-64'
      file,←'.so'
  :Case 'Mac-64'
      file,←'.dylib'

@@ -9,7 +9,7 @@ KAFKA=$(PWD)
 
 DIST=$(KAFKA)/distribution/$(PLATFORM)/$(ARCH)/$(BITS)
 
-BIN=$(KAFKA)/$(PLATFORM)$(ARCH)bin
+BIN=$(KAFKA)/$(PLATFORM)$(ARCH)$(BITS)bin
 
 
 ifeq ($(PLATFORM),WIN)
@@ -28,11 +28,11 @@ else  ifeq ($(PLATFORM),aix)
  KAFKAEXTLIBS=-lssl -lcrypto
  CC=ibm-clang_r
  CPP=ibm-clang++_r
- KAFKAINC=$(KAFKA)/librdkafka/src
- KAFKALIBS=$(KAFKA)/librdkafka/src/librdkafka.a
+ KAFKAINC=$(KAFKA)/librdkafka$(BITS)/src
+ KAFKALIBS=$(KAFKA)/librdkafka$(BITS)/src/librdkafka.a
  EXT=so
  KAFKABINSRC=build
- KAFKARDLICENSE=$(KAFKA)/librdkafka/LICENSES.txt
+ KAFKARDLICENSE=$(KAFKA)/librdkafka$(BITS)/LICENSES.txt
 else  ifeq ($(PLATFORM),mac) 
  CC=cc
  CPP=c++
@@ -80,13 +80,13 @@ $(KAFKAINC): $(KAFKALIBS)
 
 $(KAFKALIBS):  $(KAFKA)/$(KAFKABINSRC).pseudo
 
-$(KAFKA)/librdkafka:
-	git clone -b dyalog-build git@github.com:Dyalog/librdkafka $(KAFKA)/librdkafka
+$(KAFKA)/librdkafka$(BITS):
+	git clone -b dyalog-build git@github.com:Dyalog/librdkafka $(KAFKA)/librdkafka$(BITS)
 
 
-$(KAFKA)/build.pseudo: $(KAFKA)/librdkafka
-	cd $(KAFKA)/librdkafka && ./configure --prefix=/home/bhc/kafkalib  --install-deps --cc=ibm-clang_r --cxx=ibm-clang++_r --CFLAGS="-D__aix" --mbits=64 --ARFLAGS=-X64 --LDFLAGS=" -lssl -lcrypto"
-	cd $(KAFKA)/librdkafka && make libs
+$(KAFKA)/build.pseudo: $(KAFKA)/librdkafka$(BITS)
+	cd $(KAFKA)/librdkafka$(BITS) && ./configure --prefix=$(KAFKA)/kafkalib$(BITS)  --install-deps --cc=ibm-clang_r --cxx=ibm-clang++_r --CFLAGS="-D__aix" --mbits=$(BITS) --ARFLAGS=-X$(BITS) --LDFLAGS=" -lssl -lcrypto"
+	cd $(KAFKA)/librdkafka$(BITS) && make libs
 	touch $(KAFKA)/build.pseudo
 
 $(KAFKA)/nuget.pseudo: 
@@ -101,5 +101,5 @@ $(BIN)/librdkafka.$(EXT) : $(KAFKALIBS)
 clean:
 	rm -rf $(BIN)
 	rm -rf $(DIST)
-	rm -rf $(KAFKA)/librdkafka
+	rm -rf $(KAFKA)/librdkafka$(BITS)
 	rm -rf $(KAFKA)/build.pseudo $(KAFKA)/nuget.pseudo 
