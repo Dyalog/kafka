@@ -6,15 +6,19 @@ The aim of the Dyalog-Kafka project is to provide a binding to part of the [Conf
 
 ## Build and installation
 
-At the moment, this library must be built from source. Clone this repository. You will need a C++ development toolchain installed.
+### Precompiled Library
+Compiled libraries for supported platforms — AIX, Linux, macOS (arm64 and x64), and Windows — are available on the [Releases](https://github.com/Dyalog/kafka/tags) page.
 
-### Windows
+### Building from Source
+You can also build the library from source. To do so, clone this repository and ensure you have a C++ development toolchain installed.
+
+#### Windows
 
 Open `kafka.sln` in Visual Studio 2022, and build the project.
 
 Copy all the dlls from the OutDir (`kafka\x64\Debug` for 64 bit debug version) to a directory and `Start Apl` in that directory.
 
-### Linux
+#### Linux
 
 To build on linux for 64 bit 
 ```
@@ -22,11 +26,11 @@ PLATFORM=linux ./mk_kafka.sh 64
 ```
 The output files are in distribution/linux/x64
 
-### AIX
+#### AIX
 
 TODO
 
-### MacOS
+#### MacOS
 
 Install the `librdkafka` via Homebrew:
 ```
@@ -53,7 +57,17 @@ Now start Dyalog. You need a running Kafka instance. In the session, type
 ]cd path/to/kafka/repo
 ]link.create # aplsource
 ```
-Initialise the library, passing as the argument the path where the `kafka.[so|a|dylib]` shared library was installed:
+
+For users who can not use `]link`, it is possible to create the `kafka.dws` workspace.
+The workspace can be built using the ]DBuild tool and saving it
+```apl
+]DBuild path/to/kafka.dyalogbuild
+)WSID 
+)SAVE
+```
+and then `)LOAD kafka.dws`.
+
+Finally, initialise the library, passing as the argument the path where the `kafka.[so|a|dylib]` shared library was installed
 ```apl
 Init 'path/to/dir/housing/shared/lib' ⍝ to load the dll
 ```

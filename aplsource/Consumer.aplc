@@ -38,9 +38,9 @@
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
     ⍝ Destructor
 
-    ∇ unmake
+    ∇ unmake;_
       :Implements destructor
-      kafka.UninitConsumer cons
+      _←kafka.UninitConsumer cons
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝

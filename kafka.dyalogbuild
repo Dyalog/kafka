@@ -2,7 +2,7 @@
 ID         : KafkaInterface, Version=1.0
 Description: Interface to connect to the librdkafka api
 Defaults   : ⎕IO←⎕ML←1
-TARGET     : kafka16.dws
+TARGET     : kafka.dws
 EXEC  : 'kafka' ⎕ns ''
 APL   : aplsource/kafka/*.aplf, Target=#.kafka
 APL   : aplsource/*.aplc, Target=#

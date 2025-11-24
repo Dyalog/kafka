@@ -88,28 +88,29 @@ LIBRARY_API int InitKafka(void** kafka)
 LIBRARY_API int UninitProducer(void* prod)
 {
 	kafka_struct* pr = (kafka_struct*)prod;
-
+	int kerr = 0;
 	if (pr->rk != NULL) {
-		rd_kafka_flush((rd_kafka_t*)pr->rk, 500);
+		kerr = rd_kafka_flush((rd_kafka_t*)pr->rk, 500);
 		rd_kafka_destroy((rd_kafka_t*)pr->rk);
 	}
 	free(pr);
 
-	return 0;
+	return kerr;
 }
 
 LIBRARY_API int UninitConsumer(void* cons)
 {
 	kafka_struct* co = (kafka_struct*)cons;
-	// Close consumer
-	rd_kafka_consumer_close(co->rk);
+	int kerr = 0;
 	if (co->rk != NULL) {
+		// Close consumer
+		kerr = rd_kafka_consumer_close(co->rk);
 		// Destroy the consumer.
 		rd_kafka_destroy(co->rk);
 	}
 	free(co);
 
-	return 0;
+	return kerr;
 }
 
 LIBRARY_API int SetKafkaConf(void* kafka, char* key, char* val, char* errtxt, int *plen)
@@ -138,6 +139,7 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 {
 	int kerr = 0;
 	size_t len = *plen;
+	*plen=0;
 	*errtxt = 0;
 
 	kafka_struct* pr = (kafka_struct*)prod;
@@ -154,7 +156,7 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 
 		rd_kafka_t* rk = rd_kafka_new(RD_KAFKA_PRODUCER, pr->conf, errtxt, len);
 		pr->rk = rk;
-		if (NULL==rk)
+		if (NULL!=rk)
 			*plen = 0;
 		else
 			*plen =(int) strlen(errtxt);
@@ -344,42 +346,45 @@ LIBRARY_API int DeliveryReport(void* prod, unsigned long long* msgid, int* err, 
 	rd_kafka_t* rk;
 	rk = (rd_kafka_t*)pr->rk;
 
-	// Retrive delivery callbacks for the producer
-	delivery_reports* drs = (delivery_reports*)rd_kafka_opaque(rk);
-
-	// Trigger the on_delivery function to produce the DR 
-	rd_kafka_poll(rk, 500);
-	
-	// Number of delivery callbacks requested
-	// be careful, it is possible that we have sent n msgs, but
-	// poll has triggered only m<n dr, so we ask for 10 dr, we have sent 10
-	// msg, we may recive 5 dr. We can asks for other 5 later, by calling again
-	int req_drs = min(drs->counter, *plength);
-
-	for (int i = 0; i < req_drs; i++)
-	{
-		msgid[i] = (unsigned long long) drs->drs[i]->msg_id;
-		err[i] = (int)drs->drs[i]->err;
-
-		// Free memory
-		free(drs->drs[i]);
-		drs->drs[i] = NULL;
-	}
-
-	// Check if the CB queue is empty
-	if (*plength >= drs->counter) {
-		*plength = drs->counter;
-		drs->counter = 0;
-	}
-	// If not, move the queued messages at the beginning of the drs array and reset counters
+	if (rk == NULL)
+		*plength = 0;
 	else {
-		drs->counter = drs->counter - *plength;
-		for (int i = 0; i < drs->counter; i++) {
-			drs->drs[i] = drs->drs[i + *plength];
-			drs->drs[i + *plength] = NULL;
+		// Retrive delivery callbacks for the producer
+		delivery_reports* drs = (delivery_reports*)rd_kafka_opaque(rk);
+
+		// Trigger the on_delivery function to produce the DR 
+		rd_kafka_poll(rk, 500);
+
+		// Number of delivery callbacks requested
+		// be careful, it is possible that we have sent n msgs, but
+		// poll has triggered only m<n dr, so we ask for 10 dr, we have sent 10
+		// msg, we may recive 5 dr. We can asks for other 5 later, by calling again
+		int req_drs = min(drs->counter, *plength);
+
+		for (int i = 0; i < req_drs; i++)
+		{
+			msgid[i] = (unsigned long long) drs->drs[i]->msg_id;
+			err[i] = (int)drs->drs[i]->err;
+
+			// Free memory
+			free(drs->drs[i]);
+			drs->drs[i] = NULL;
+		}
+
+		// Check if the CB queue is empty
+		if (*plength >= drs->counter) {
+			*plength = drs->counter;
+			drs->counter = 0;
+		}
+		// If not, move the queued messages at the beginning of the drs array and reset counters
+		else {
+			drs->counter = drs->counter - *plength;
+			for (int i = 0; i < drs->counter; i++) {
+				drs->drs[i] = drs->drs[i + *plength];
+				drs->drs[i + *plength] = NULL;
+			}
 		}
 	}
-
 	return 0;
 }
 
