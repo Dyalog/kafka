@@ -1,0 +1,7 @@
+ r←committed(cons tplist);err;offset
+ (err offset)←2↑Committed cons tplist 1
+ :If 0≠err
+     r←err''
+ :Else
+     r←0 offset
+ :EndIf

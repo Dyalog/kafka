@@ -1,0 +1,23 @@
+ ProducerLoop;i;config;start
+
+ #.Init'.'
+
+⍝ Producer configurations
+ config←0 2⍴⍬
+ config⍪←'bootstrap.servers' 'localhost:9092'
+ config⍪←'client.id' 'producerclient'
+ ⎕←'Init new producer with config:'
+ config
+ producer←⎕NEW #.Producer config
+
+ ⎕←'Start producing messages for 120 seconds every 5 seconds:'
+ start←3⊃⎕AI
+ :While 120000>3⊃⎕AI-start
+     producer.produce_record ⎕NEW #.Record('topic1'('Time: ',⍕3⊃⎕AI)('key',⍕?5))
+     ⎕DL 5
+     producer.produce_record ⎕NEW #.Record('topic2'('Time: ',⍕3⊃⎕AI)('key',⍕?5))
+     ⎕DL 5
+ :EndWhile
+ ⎕←'Outstanding messages:'
+ ⎕DL 0.5
+ producer.update_outstanding

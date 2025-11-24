@@ -1,0 +1,75 @@
+ ManualTPList;start;cr;producer;consumer;bb;so;ef;l;err
+ ⍝ Simple example to show how to manually create a new topic partition list
+ ⍝ and produce and consume messages from it.
+ ⍝ This example also shows how the consumer can be configured by
+ ⍝ using consumer.configure instead of parsing the config when creating it.
+
+ ⍝ Topic created with, e.g.
+ ⍝
+ ⍝     kafka-topics.sh \
+ ⍝       --bootstrap-server localhost:9092 \
+ ⍝       --create --topic "animals" \
+ ⍝       --partitions 3
+ ⍝
+
+ #.Init'.'
+
+ bb←⎕NEW #.Record('animals' 'Blackbird' 'birds')
+ so←⎕NEW #.Record('animals' 'Sole' 'fish')
+ ef←⎕NEW #.Record('animals' 'Elefant' 'mamal')
+
+ ⎕←'Init new producer:'
+ ⍝ Producer
+ producer←⎕NEW #.Producer
+ producer.configure'bootstrap.servers' 'localhost:9092'
+ producer.configure'client.id' 'martina'
+
+ ⎕←'Produce:'
+ ⍝ Produce
+ producer.produce_record bb
+ producer.produce_record so
+ producer.produce_record ef
+
+ ⎕←'Ask for delivery report:'
+ ⎕DL 0.5
+ producer.delivery_report 10 ⍝ Ask for delivery reports
+
+ ⎕←'Init new consumer and set config:'
+ ⍝ Consumer configs
+ consumer←⎕NEW #.Consumer
+
+ consumer.configure'bootstrap.servers' 'localhost:9092'
+ consumer.configure'client.id' 'martina'
+ consumer.configure'group.id' 'dyalog'
+ consumer.configure'auto.offset.reset' 'earliest' ⍝ Start consuming from the beginning if no offset is found
+
+ ⎕←'Create a new topic partition list and set topic:'
+ ⍝ Manually create a new topic partition list l
+ l←consumer.topic_partition
+ ⍝ Set topics (and partition, wich will be ignored when subscribing to it)
+ consumer.set_topic_partition l'animals' 0
+ ⎕←'Subscribe consumer to list:'
+ consumer.subscribe_topic_partition l
+ ⎕←'Waiting for rebalance before starting consuming...'
+ ⎕DL 5
+
+ ⍝ Consume
+ start←3⊃⎕AI
+ :While 1
+     cr←consumer.consume_record
+     :If 1=⊃cr
+     :AndIf 20000>(3⊃⎕AI)-start
+         ⎕DL 0.2
+         :Continue
+     :ElseIf 0=⊃cr
+         (2⊃cr).(Topic Payload Key Partition)
+         start←0
+     :Else
+         cr
+         :Leave
+     :EndIf
+ :EndWhile
+
+ ⎕←'Close producer and consumer:'
+ ⎕EX'producer'
+ ⎕EX'consumer'
