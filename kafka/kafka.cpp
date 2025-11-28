@@ -143,6 +143,7 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 	*errtxt = 0;
 
 	kafka_struct* pr = (kafka_struct*)prod;
+	*msgid = global_counter++;
 
 	if (pr->rk == NULL) {
 
@@ -165,9 +166,6 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 		//ok?
 		pr->conf = NULL;
 	}
-
-	
-	*msgid = global_counter++;
 
 	kerr = rd_kafka_producev(pr->rk,
 		RD_KAFKA_V_PARTITION(partition),
