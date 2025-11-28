@@ -158,9 +158,10 @@ LIBRARY_API int Produce(void* prod, char* topic,  char* payload, uint32_t paylen
 		pr->rk = rk;
 		if (NULL!=rk)
 			*plen = 0;
-		else
-			*plen =(int) strlen(errtxt);
-
+		else {
+			*plen = (int)strlen(errtxt);	
+			return 1;					// Failed to initialize producer
+		}
 		//ok?
 		pr->conf = NULL;
 	}
