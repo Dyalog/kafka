@@ -6,8 +6,4 @@
  ⍝ key key
  ⍝ partition partition
  (err msgid msg len)←4↑Produce prod topic_name payload(≢payload)key(≢key)partition 1 512 512
- :If 0≠len
-     r←err msgid (len↑msg)
- :Else
-     r←err msgid ''
- :EndIf
+ r←err msgid (len↑msg)
