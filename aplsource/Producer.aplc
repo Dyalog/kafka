@@ -46,20 +46,22 @@
     (topic payload key partition)←4↑ arg,  (≢arg)↓ '' '' '' ¯1
       :Access public
       (z msgid err)←kafka.produce prod topic payload key partition
-      r←z,msgid
       :If z=0
-        outstanding⍪←msgid 0
+          outstanding⍪←msgid 0
+          r←z,msgid
+      :Else
+          :If 0≠⍴err
+              r←z,msgid,'ERROR START PRODUCER: ',err
+          :Else
+              r←z,msgid,'ERROR: ',2⊃parse_error z
+          :EndIf
       :EndIf
     ∇
 
 
     ∇ r←produce_record record;err;msgid;z
       :Access public
-      (z msgid err)←kafka.produce prod, record.asArg
-      r←z,msgid
-      :If z=0
-        outstanding⍪←msgid 0
-      :EndIf
+      r←produce record.asArg
     ∇
 
     ⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝⍝
